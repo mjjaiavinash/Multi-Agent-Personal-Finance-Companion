@@ -1,10 +1,10 @@
-# 🏗️ SpendSense AI — Architecture Documentation
+# SpendSense AI - Architecture Documentation
 
 > **Version:** 1.0.0 | **Last Updated:** July 2026 | **Stack:** React · Node.js · MongoDB · Groq AI
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 1. [System Architecture Overview](#1-system-architecture-overview)
 2. [Frontend Architecture](#2-frontend-architecture)
@@ -27,13 +27,13 @@ SpendSense AI follows a **3-tier client-server architecture** with a dedicated A
 
 ```mermaid
 graph TB
-    subgraph CLIENT["🖥️  CLIENT LAYER — React + Vite"]
+    subgraph CLIENT["CLIENT LAYER — React + Vite"]
         UI["React UI Pages"]
         CTX["Context Providers\n(Auth · Notification)"]
         AXIOS["Axios HTTP Layer\n(Interceptors · 120s timeout)"]
     end
 
-    subgraph SERVER["⚙️  SERVER LAYER — Express.js + Node.js"]
+    subgraph SERVER["SERVER LAYER — Express.js + Node.js"]
         MW["Middleware Stack\n(Helmet · CORS · Rate Limiter · JWT Auth)"]
         ROUTES["REST API Router\n/api/v1/*"]
         CTRL["Controllers"]
@@ -41,24 +41,24 @@ graph TB
         CACHE["In-Memory LRU Cache\n(Prediction results)"]
     end
 
-    subgraph AI["🤖  AI INTELLIGENCE LAYER — Groq SDK"]
+    subgraph AI["AI INTELLIGENCE LAYER — Groq SDK"]
         ORCH["Orchestrator Agent\n(Pipeline Coordinator)"]
         subgraph AGENTS["Specialist Agents"]
-            A1["🏷️ Categorizer"]
-            A2["📈 Pattern Analyzer"]
-            A3["💰 Savings Advisor"]
-            A4["🎯 Budget Planner"]
-            A5["❤️ Health Score"]
-            A6["📄 Monthly Report"]
-            A7["🔮 Prediction"]
-            A8["💬 Chat Agent"]
-            A9["🐷 Savings Goal"]
-            A10["🧠 Finance Agent"]
+            A1["Categorizer"]
+            A2["Pattern Analyzer"]
+            A3["Savings Advisor"]
+            A4["Budget Planner"]
+            A5["Health Score"]
+            A6["Monthly Report"]
+            A7["Prediction"]
+            A8["Chat Agent"]
+            A9["Savings Goal"]
+            A10["Finance Agent"]
         end
         GROQ["Groq API\nLlama 3.3 70B Versatile"]
     end
 
-    subgraph DB["🗄️  DATA LAYER — MongoDB Atlas"]
+    subgraph DB["DATA LAYER — MongoDB Atlas"]
         U["Users"]
         E["Expenses"]
         AI_R["AI Reports"]
@@ -179,7 +179,7 @@ graph LR
     end
 
     subgraph REMOTE["Remote State (useApi hook)"]
-        RA["useApi(apiFn)\n→ { data, loading, error, execute }"]
+        RA["useApi(apiFn)\n-> { data, loading, error, execute }"]
     end
 
     AC -->|"useAuth()"| LOCAL
@@ -231,7 +231,7 @@ graph TB
     AGENT["AI Agents"]
     DB[("MongoDB")]
 
-    ERR["Global Error Handler\n(ApiError → JSON · Stack in dev only)"]
+    ERR["Global Error Handler\n(ApiError -> JSON · Stack in dev only)"]
     RES["HTTP Response"]
 
     REQ --> H --> MS --> CORS --> COMP --> PARSE --> MORGAN --> RATE
@@ -263,13 +263,13 @@ graph LR
     end
 
     subgraph TRIGGERS["Auto Notification Triggers"]
-        T1["Budget 80% → budget_80"]
-        T2["Budget Exceeded → budget_exceeded"]
-        T3["Large Expense ≥₹5000 → large_expense"]
-        T4["Duplicate Detected → duplicate_expense"]
-        T5["Goal Achieved → savings_goal_achieved"]
-        T6["Report Ready → monthly_report_ready"]
-        T7["Prediction Updated → prediction_updated"]
+        T1["Budget 80% -> budget_80"]
+        T2["Budget Exceeded -> budget_exceeded"]
+        T3["Large Expense >= Rs 5000 -> large_expense"]
+        T4["Duplicate Detected -> duplicate_expense"]
+        T5["Goal Achieved -> savings_goal_achieved"]
+        T6["Report Ready -> monthly_report_ready"]
+        T7["Prediction Updated -> prediction_updated"]
     end
 
     ES -->|"fires"| T1
@@ -388,10 +388,10 @@ graph TD
     end
 
     subgraph BENEFIT["Query Benefits"]
-        B1["Dashboard summary → O(log n)"]
-        B2["AI report lookup → O(log n)"]
-        B3["Monthly history → O(log n)"]
-        B4["Unread bell count → O(log n)"]
+        B1["Dashboard summary -> O(log n)"]
+        B2["AI report lookup -> O(log n)"]
+        B3["Monthly history -> O(log n)"]
+        B4["Unread bell count -> O(log n)"]
     end
 
     I1 --> B1
@@ -456,31 +456,31 @@ xychart-beta
 
 ```mermaid
 graph TB
-    subgraph REGISTRY["🤖 SpendSense AI — 10-Agent Registry"]
+    subgraph REGISTRY["SpendSense AI — 10-Agent Registry"]
 
         subgraph ANALYSIS["Analysis Agents"]
-            CAT["🏷️ Categorizer Agent\n• Single & batch classification\n• Max batch: 20 items\n• Retry on parse failure\n• Enum-validated categories"]
-            PAT["📈 Pattern Analyzer Agent\n• Velocity & trend detection\n• Recurring anomaly spotting\n• Week-over-week deltas\n• Day-of-week patterns"]
-            FIN["🧠 Finance Agent\n• Summary generation\n• Top category identification\n• Savings potential estimate\n• Structured fallback on error"]
+            CAT["Categorizer Agent\n• Single & batch classification\n• Max batch: 20 items\n• Retry on parse failure\n• Enum-validated categories"]
+            PAT["Pattern Analyzer Agent\n• Velocity & trend detection\n• Recurring anomaly spotting\n• Week-over-week deltas\n• Day-of-week patterns"]
+            FIN["Finance Agent\n• Summary generation\n• Top category identification\n• Savings potential estimate\n• Structured fallback on error"]
         end
 
         subgraph ADVISORY["Advisory Agents"]
-            SAV["💰 Savings Advisor Agent\n• Cost-cutting strategies\n• Category-specific tips\n• High-impact priorities\n• Emergency fund advice"]
-            BUDG["🎯 Budget Planner Agent\n• 50/30/20 rule allocation\n• Per-category cap generation\n• Income-based planning\n• Rebalance suggestions"]
-            GOAL["🐷 Savings Goal Agent\n• Goal acceleration tips\n• Deposit frequency advice\n• Risk-adjusted strategies\n• Timeline optimization"]
+            SAV["Savings Advisor Agent\n• Cost-cutting strategies\n• Category-specific tips\n• High-impact priorities\n• Emergency fund advice"]
+            BUDG["Budget Planner Agent\n• 50/30/20 rule allocation\n• Per-category cap generation\n• Income-based planning\n• Rebalance suggestions"]
+            GOAL["Savings Goal Agent\n• Goal acceleration tips\n• Deposit frequency advice\n• Risk-adjusted strategies\n• Timeline optimization"]
         end
 
         subgraph MONITORING["Monitoring Agents"]
-            HS["❤️ Health Score Agent\n• 0–100 composite score\n• A+ to F letter grade\n• 4-pillar breakdown:\n  Savings · Budget · Consistency · Diversity"]
-            MR["📄 Monthly Report Agent\n• Full financial audit\n• Month-over-month compare\n• AI recommendations\n• PDF-ready structured data"]
-            PRED["🔮 Prediction Agent\n• Weekly forecast\n• Monthly forecast\n• Confidence scoring (50–95%)\n• Category predictions"]
+            HS["Health Score Agent\n• 0–100 composite score\n• A+ to F letter grade\n• 4-pillar breakdown:\n  Savings · Budget · Consistency · Diversity"]
+            MR["Monthly Report Agent\n• Full financial audit\n• Month-over-month compare\n• AI recommendations\n• PDF-ready structured data"]
+            PRED["Prediction Agent\n• Weekly forecast\n• Monthly forecast\n• Confidence scoring (50–95%)\n• Category predictions"]
         end
 
         subgraph CONVERSATIONAL["Conversational Agent"]
-            CHAT["💬 Chat Agent\n• Multi-turn conversation\n• Context from expense history\n• Real-time financial Q&A\n• Persistent chat memory"]
+            CHAT["Chat Agent\n• Multi-turn conversation\n• Context from expense history\n• Real-time financial Q&A\n• Persistent chat memory"]
         end
 
-        ORCH2["🎼 Orchestrator Agent\n(Coordinates all agents)"]
+        ORCH2["Orchestrator Agent\n(Coordinates all agents)"]
 
     end
 
@@ -505,14 +505,14 @@ graph TB
 
 ```mermaid
 sequenceDiagram
-    participant FE as 🖥️ Frontend
-    participant ORCH as 🎼 Orchestrator
-    participant CAT as 🏷️ Categorizer
-    participant PAT as 📈 Pattern Analyzer
-    participant SAV as 💰 Savings Advisor
-    participant BUDG as 🎯 Budget Planner
-    participant GROQ as 🤖 Groq LLM
-    participant DB as 🗄️ MongoDB
+    participant FE as Frontend
+    participant ORCH as Orchestrator
+    participant CAT as Categorizer
+    participant PAT as Pattern Analyzer
+    participant SAV as Savings Advisor
+    participant BUDG as Budget Planner
+    participant GROQ as Groq LLM
+    participant DB as MongoDB
 
     FE->>ORCH: POST /api/v1/orchestrator/analyze\n{ months, forceRefresh }
     ORCH->>DB: Fetch expense history (N months)
@@ -597,11 +597,11 @@ graph LR
 
 ```mermaid
 sequenceDiagram
-    participant U as 👤 User
-    participant FE as 🖥️ React App
-    participant MW as ⚙️ Auth Middleware
-    participant CTRL as 📋 AuthController
-    participant DB as 🗄️ MongoDB
+    participant U as User
+    participant FE as React App
+    participant MW as Auth Middleware
+    participant CTRL as AuthController
+    participant DB as MongoDB
 
     rect rgb(30, 27, 75)
         Note over U,DB: REGISTRATION FLOW
@@ -612,10 +612,10 @@ sequenceDiagram
         CTRL->>DB: bcrypt.hash(password, 12)
         CTRL->>DB: User.create({ name, email, hashedPassword\n  monthlyIncome: 3000, monthlyBudget: 2400 })
         DB-->>CTRL: newUser
-        CTRL->>CTRL: user.generateToken() → JWT
+        CTRL->>CTRL: user.generateToken() -> JWT
         CTRL-->>FE: { user: toSafeObject(), token }
         FE->>FE: AuthContext.login(user, token)\nlocalStorage.setItem(token, user)
-        FE-->>U: Redirect → /dashboard
+        FE-->>U: Redirect -> /dashboard
     end
 
     rect rgb(10, 22, 40)
@@ -625,10 +625,10 @@ sequenceDiagram
         CTRL->>DB: User.findOne({ email }).select(+password)
         DB-->>CTRL: user
         CTRL->>CTRL: user.comparePassword(plain)\nbcrypt.compare()
-        CTRL->>CTRL: user.generateToken() → JWT
+        CTRL->>CTRL: user.generateToken() -> JWT
         CTRL-->>FE: { user: toSafeObject(), token }
         FE->>FE: AuthContext.login(user, token)
-        FE-->>U: Redirect → /dashboard
+        FE-->>U: Redirect -> /dashboard
     end
 ```
 
@@ -649,7 +649,7 @@ flowchart TD
     DBCHECK --> EXISTS{"User\nexists?"}
     EXISTS -->|"No"| UNAUTH4["401 Unauthorized\n'User not found'"]
     EXISTS -->|"Yes"| ATTACH["req.user = user.toSafeObject()\n(includes monthlyIncome, monthlyBudget)"]
-    ATTACH --> NEXT["next() → Controller"]
+    ATTACH --> NEXT["next() -> Controller"]
 
     style UNAUTH1 fill:#2a0a0a,stroke:#dc2626,color:#fca5a5
     style UNAUTH2 fill:#2a0a0a,stroke:#dc2626,color:#fca5a5
@@ -672,7 +672,7 @@ flowchart TD
 
     API_CALL --> AUTH_CHECK["JWT Auth Middleware"]
     AUTH_CHECK --> CATEGORIZE{"Category\nprovided?"}
-    CATEGORIZE -->|"No → auto-detect"| CAT_AGENT["🏷️ Categorizer Agent\n(Groq AI)"]
+    CATEGORIZE -->|"No -> auto-detect"| CAT_AGENT["Categorizer Agent\n(Groq AI)"]
     CAT_AGENT --> CATEGORIZE
     CATEGORIZE -->|"Yes"| ESCAPE["escapeRegex(title.trim())\n(ReDoS prevention)"]
 
@@ -684,14 +684,14 @@ flowchart TD
 
     subgraph CHECKS["Notification Trigger Logic"]
         NC1{"Duplicate\nfound?"}
-        NC2{"Amount\n≥ ₹5,000?"}
-        NC3{"Monthly spend\n≥ 80% budget?"}
-        NC4{"Monthly spend\n≥ 100% budget?"}
+        NC2{"Amount\n>= Rs. 5,000?"}
+        NC3{"Monthly spend\n>= 80% budget?"}
+        NC4{"Monthly spend\n>= 100% budget?"}
 
-        NC1 -->|"yes"| N1["🔔 duplicate_expense\n(warning)"]
-        NC2 -->|"yes"| N2["🔔 large_expense\n(info)"]
-        NC3 -->|"yes & < 100%"| N3["🔔 budget_80\n(warning)"]
-        NC4 -->|"yes"| N4["🔔 budget_exceeded\n(error)"]
+        NC1 -->|"yes"| N1["duplicate_expense\n(warning)"]
+        NC2 -->|"yes"| N2["large_expense\n(info)"]
+        NC3 -->|"yes & < 100%"| N3["budget_80\n(warning)"]
+        NC4 -->|"yes"| N4["budget_exceeded\n(error)"]
     end
 
     ASYNC_CHECKS --> CHECKS
@@ -710,9 +710,9 @@ flowchart LR
 
     PARSE --> BUILD_FILTER["Build MongoDB filter\n{ user: userId }"]
 
-    BUILD_FILTER --> S1["search.trim()\n→ escapeRegex()\n→ { $regex, $options:'i' }"]
-    BUILD_FILTER --> S2["category\n→ exact enum match"]
-    BUILD_FILTER --> S3["startDate / endDate\n→ { $gte, $lte }"]
+    BUILD_FILTER --> S1["search.trim()\n-> escapeRegex()\n-> { $regex, $options:'i' }"]
+    BUILD_FILTER --> S2["category\n-> exact enum match"]
+    BUILD_FILTER --> S3["startDate / endDate\n-> { $gte, $lte }"]
 
     S1 --> EXEC
     S2 --> EXEC
@@ -739,8 +739,8 @@ flowchart TD
     LOADER --> API["POST /api/v1/orchestrator/analyze\n{ months: 3|6|12, forceRefresh: bool }"]
 
     API --> CACHE_CHECK{"Cached result\navailable &\nnot forceRefresh?"}
-    CACHE_CHECK -->|"yes → HIT"| CACHED["Return cached AIReport\nfromCache: true"]
-    CACHE_CHECK -->|"no → MISS"| FETCH["Fetch expenses from DB\n(compound index scan)"]
+    CACHE_CHECK -->|"yes -> HIT"| CACHED["Return cached AIReport\nfromCache: true"]
+    CACHE_CHECK -->|"no -> MISS"| FETCH["Fetch expenses from DB\n(compound index scan)"]
 
     FETCH --> S1_RUN["Stage 1: Categorizer\n(Sequential)"]
     S1_RUN --> S1_OK{"Success?"}
@@ -792,10 +792,10 @@ flowchart LR
 
     PARALLEL_AGG --> CONTEXT["Build prediction context\n{ avgWeekly · avgMonthly · categories\n  normalizedWeeks[4] · dailyPattern }"]
 
-    CONTEXT --> PRED_AGENT["🔮 Prediction Agent\n(Groq · temp=0.2)"]
-    PRED_AGENT --> CONFIDENCE["Dynamic confidence score\n+10 if txns≥10\n+10 if txns≥30\n+5 if months≥3\n+5 if months≥6\n→ clamp(50, 95)"]
+    CONTEXT --> PRED_AGENT["Prediction Agent\n(Groq · temp=0.2)"]
+    PRED_AGENT --> CONFIDENCE["Dynamic confidence score\n+10 if txns>=10\n+10 if txns>=30\n+5 if months>=3\n+5 if months>=6\n-> clamp(50, 95)"]
 
-    CONFIDENCE --> SET_CACHE["setCached(key, result)\n(evict oldest if size≥100)"]
+    CONFIDENCE --> SET_CACHE["setCached(key, result)\n(evict oldest if size>=100)"]
     SET_CACHE --> RETURN["Return predictions\n{ nextWeek · nextMonth · forecastSeries\n  categoryPredictions · confidence }"]
 
     style PARALLEL_AGG fill:#0a1628,stroke:#1e4d8c,color:#e2e8f0
@@ -810,16 +810,16 @@ flowchart LR
 
 ```mermaid
 sequenceDiagram
-    participant SVC as ⚙️ Backend Service
-    participant NS as 📬 NotificationService
-    participant DB as 🗄️ MongoDB
-    participant FE as 🖥️ Frontend
-    participant CTX as 🔔 NotificationContext
-    participant UI as 👤 User
+    participant SVC as Backend Service
+    participant NS as NotificationService
+    participant DB as MongoDB
+    participant FE as Frontend
+    participant CTX as NotificationContext
+    participant UI as User
 
     Note over SVC,DB: CREATION (event-driven, async)
     SVC->>NS: createNotification(userId, { type, title, message, severity })
-    NS->>DB: findOne({ user, type, title, createdAt≥60s ago })
+    NS->>DB: findOne({ user, type, title, createdAt>=60s ago })
     DB-->>NS: existing? (deduplication check)
     alt Duplicate within 60s
         NS-->>SVC: return existing (no-op)
@@ -837,7 +837,7 @@ sequenceDiagram
         alt New notifications arrived
             CTX->>CTX: addToast({ id, title, message, severity })
             CTX->>CTX: setTimeout(dismiss, 5000)\n(tracked in toastTimersRef)
-            CTX-->>UI: 🍞 Toast popup appears
+            CTX-->>UI: Toast popup appears
         end
         CTX->>CTX: Update bell badge count
     end
@@ -860,26 +860,26 @@ sequenceDiagram
 
 ```mermaid
 graph TB
-    subgraph INTERNET["🌐 Internet"]
-        USER_B["👤 User Browser"]
+    subgraph INTERNET["Internet"]
+        USER_B["User Browser"]
     end
 
-    subgraph CDN["☁️ Vercel / Netlify (Frontend CDN)"]
+    subgraph CDN["Vercel / Netlify (Frontend CDN)"]
         STATIC["React Static Build\ndist/ — HTML · JS · CSS"]
         EDGE["Edge Network\nGlobal CDN Nodes"]
     end
 
-    subgraph BACKEND_HOST["🚀 Render / Railway (Backend)"]
+    subgraph BACKEND_HOST["Render / Railway (Backend)"]
         NODE["Node.js Process\nExpress.js Server :5000"]
         ENV_VARS["Environment Variables\nMONGO_URI · JWT_SECRET\nGROQ_API_KEY · CLIENT_URL"]
     end
 
-    subgraph MONGO_ATLAS["🗄️ MongoDB Atlas"]
+    subgraph MONGO_ATLAS["MongoDB Atlas"]
         PRIMARY["Primary Node\n(Reads + Writes)"]
         REPLICA["Replica Set\n(Reads + Failover)"]
     end
 
-    subgraph GROQ_CLOUD["🤖 Groq Cloud API"]
+    subgraph GROQ_CLOUD["Groq Cloud API"]
         LLAMA["Llama 3.3 70B Versatile\nInference Endpoint"]
     end
 
@@ -901,17 +901,17 @@ graph TB
 
 | Variable | Service | Required | Description |
 |---|---|---|---|
-| `MONGO_URI` | Backend | ✅ | MongoDB Atlas connection string |
-| `JWT_SECRET` | Backend | ✅ | Secret key for JWT signing (min 32 chars) |
-| `JWT_EXPIRES_IN` | Backend | ⚪ | Token expiry (default: `7d`) |
-| `GROQ_API_KEY` | Backend | ✅ | Groq cloud API key |
-| `GROQ_MODEL` | Backend | ⚪ | LLM model (default: `llama-3.3-70b-versatile`) |
-| `GROQ_TIMEOUT_MS` | Backend | ⚪ | Groq request timeout ms (default: `60000`) |
-| `GROQ_MAX_RETRIES` | Backend | ⚪ | Groq retry count (default: `3`) |
-| `CLIENT_URL` | Backend | ✅ | Frontend URL for CORS whitelist |
-| `PORT` | Backend | ⚪ | Server port (default: `5000`) |
-| `NODE_ENV` | Backend | ⚪ | `development` or `production` |
-| `VITE_API_BASE_URL` | Frontend | ✅ | Backend API base URL |
+| `MONGO_URI` | Backend | Yes | MongoDB Atlas connection string |
+| `JWT_SECRET` | Backend | Yes | Secret key for JWT signing (min 32 chars) |
+| `JWT_EXPIRES_IN` | Backend | Optional | Token expiry (default: `7d`) |
+| `GROQ_API_KEY` | Backend | Yes | Groq cloud API key |
+| `GROQ_MODEL` | Backend | Optional | LLM model (default: `llama-3.3-70b-versatile`) |
+| `GROQ_TIMEOUT_MS` | Backend | Optional | Groq request timeout ms (default: `60000`) |
+| `GROQ_MAX_RETRIES` | Backend | Optional | Groq retry count (default: `3`) |
+| `CLIENT_URL` | Backend | Yes | Frontend URL for CORS whitelist |
+| `PORT` | Backend | Optional | Server port (default: `5000`) |
+| `NODE_ENV` | Backend | Optional | `development` or `production` |
+| `VITE_API_BASE_URL` | Frontend | Yes | Backend API base URL |
 
 ---
 
