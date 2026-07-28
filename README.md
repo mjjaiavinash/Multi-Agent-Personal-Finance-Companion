@@ -12,8 +12,6 @@
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
-[Live Demo](#deployment) · [Docs](#api-endpoints) · [Report Bug](https://github.com/mjjaiavinash/Multi-Agent-Personal-Finance-Companion/issues) · [Request Feature](https://github.com/mjjaiavinash/Multi-Agent-Personal-Finance-Companion/issues)
-
 </div>
 
 ---
