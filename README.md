@@ -2,7 +2,7 @@
 
 # SpendSense AI
 
-### _Intelligent Personal Finance Management powered by Groq AI_
+### _An Autonomous Multi-Agent AI System for Intelligent Personal Finance Operations_
 
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
@@ -15,6 +15,10 @@
 [Live Demo](#deployment) · [Docs](#api-endpoints) · [Report Bug](https://github.com/mjjaiavinash/Multi-Agent-Personal-Finance-Companion/issues) · [Request Feature](https://github.com/mjjaiavinash/Multi-Agent-Personal-Finance-Companion/issues)
 
 </div>
+
+---
+
+**SpendSense AI** is an autonomous, self-learning, multi-agent AI-powered Personal Finance Command Center. It connects financial accounts, expense history, budget allocations, savings goals, recurring subscriptions, and risk factors to deliver real-time monitoring, spending anomaly detection, predictive risk analysis, root-cause investigation, what-if budget simulations, and autonomous/human-in-the-loop financial decision support.
 
 ---
 
