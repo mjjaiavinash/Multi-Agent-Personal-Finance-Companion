@@ -1,7 +1,5 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/SpendSense%20AI-Financial%20Intelligence-6366f1?style=for-the-badge&logo=brain&logoColor=white" alt="SpendSense AI" />
-
 # SpendSense AI
 
 ### _Intelligent Personal Finance Management powered by Groq AI_
@@ -14,7 +12,7 @@
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
-[Live Demo](#deployment) · [Docs](#api-endpoints) · [Report Bug](https://github.com/your-username/spendsense-ai/issues) · [Request Feature](https://github.com/your-username/spendsense-ai/issues)
+[Live Demo](#deployment) · [Docs](#api-endpoints) · [Report Bug](https://github.com/mjjaiavinash/Multi-Agent-Personal-Finance-Companion/issues) · [Request Feature](https://github.com/mjjaiavinash/Multi-Agent-Personal-Finance-Companion/issues)
 
 </div>
 
@@ -286,8 +284,8 @@ SpendSense AI/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/spendsense-ai.git
-cd spendsense-ai
+git clone https://github.com/mjjaiavinash/Multi-Agent-Personal-Finance-Companion.git
+cd Multi-Agent-Personal-Finance-Companion
 ```
 
 ### 2. Install All Dependencies
@@ -595,6 +593,6 @@ Made by the SpendSense AI Team
 
 **Star this repo** if you found it useful!
 
-[![GitHub stars](https://img.shields.io/github/stars/your-username/spendsense-ai?style=social)](https://github.com/your-username/spendsense-ai)
+[![GitHub stars](https://img.shields.io/github/stars/mjjaiavinash/Multi-Agent-Personal-Finance-Companion?style=social)](https://github.com/mjjaiavinash/Multi-Agent-Personal-Finance-Companion)
 
 </div>
