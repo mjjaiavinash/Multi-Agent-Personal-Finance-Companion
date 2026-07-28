@@ -22,8 +22,8 @@ const detectIntent = (message) => {
     return "affordability";
   }
 
-  // Trend: "why did I spend", "why is my", "more this month", "increased", "went up"
-  if (/why (did|is|are)|more this month|spend more|increased|went up|higher than/.test(lower)) {
+  // Trend / Spending / Total spent: "how much", "how much money", "total spent", "spent", "expenses", "used"
+  if (/how much|total spent|my spend|my expense|iam used|used|how much money|why (did|is|are)|more this month|spend more|increased|went up|higher than/.test(lower)) {
     return "trend";
   }
 
@@ -96,104 +96,84 @@ RESPONSE FORMAT FOR GENERAL QUESTIONS:
  * Builds a rich, structured system prompt that grounds Gemini in the user's
  * actual financial data and configures its persona, capabilities, and constraints.
  *
- * Design decisions:
- * - Financial context is injected as structured JSON so Gemini can reference
- *   exact numbers rather than making up plausible-sounding figures.
- * - Explicit "NEVER" rules prevent hallucination of income, savings rates, etc.
- * - Intent-specific instructions are appended so the response format matches
- *   what the user actually asked for.
- * - The persona is professional but conversational — not robotic, not overly casual.
- *
  * @param {Object} context - Enriched financial context from the service layer
  * @param {string} intent  - Detected intent of the current message
  * @returns {string}
  */
 const buildSystemPrompt = (context, intent) => {
-  const hasData = context && (context.totalSpent > 0 || context.count > 0);
+  const fmt = (n) => `₹${Number(n ?? 0).toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 
-  const fmt = (n) => `₹${Number(n ?? 0).toFixed(2)}`;
+  const totalSpent = Number(context?.totalSpent || 0);
+  const thisMonth  = Number(context?.thisMonth || 0);
+  const lastMonth  = Number(context?.lastMonth || 0);
+  const count      = Number(context?.count || 0);
+  const income     = Number(context?.monthlyIncome || 0);
+  const budget     = Number(context?.monthlyBudget || 0);
+  const available  = Math.max(0, (budget || income) - thisMonth);
 
-  const financialSnapshot = hasData
-    ? `
-━━━ USER'S FINANCIAL SNAPSHOT ━━━
-Total Spent (all time):     ${fmt(context.totalSpent)}
-Total Transactions:         ${context.count ?? 0}
-This Month's Spending:      ${fmt(context.thisMonth)}
-Last Month's Spending:      ${fmt(context.lastMonth)}
-Month-over-Month Change:    ${
-      context.thisMonth && context.lastMonth && context.lastMonth > 0
-        ? `${(((context.thisMonth - context.lastMonth) / context.lastMonth) * 100).toFixed(1)}%`
-        : "N/A"
-    }
-Average Per Transaction:    ${fmt(context.avgPerDay)}
+  const financialSnapshot = `
+━━━ USER'S REAL-TIME FINANCIAL SNAPSHOT ━━━
+User Name:                  ${context?.userName || "User"}
+Monthly Income:             ${income > 0 ? fmt(income) : "Not set"}
+Monthly Budget Target:      ${budget > 0 ? fmt(budget) : "Not set"}
+Available Balance:          ${fmt(available)}
+Total Spent (All-Time):     ${fmt(totalSpent)}
+This Month's Spending:      ${fmt(thisMonth)}
+Last Month's Spending:      ${fmt(lastMonth)}
+Total Transactions Logged:  ${count}
+Average Per Transaction:    ${fmt(context?.avgPerDay || 0)}
 
 Spending by Category:
 ${
-  context.byCategory && Object.keys(context.byCategory).length > 0
+  context?.byCategory && Object.keys(context.byCategory).length > 0
     ? Object.entries(context.byCategory)
         .sort(([, a], [, b]) => b - a)
         .map(([cat, amt]) => `  • ${cat}: ${fmt(amt)}`)
         .join("\n")
-    : "  No category data available yet."
+    : "  No category spending logged yet."
 }
 
 Monthly Trend (last 6 months):
 ${
-  context.monthly && context.monthly.length > 0
+  context?.monthly && context.monthly.length > 0
     ? context.monthly.map((m) => `  • ${m.month}: ${fmt(m.total)}`).join("\n")
-    : "  No monthly trend data available yet."
+    : "  No monthly trend history yet."
 }
 
 Recurring Expenses:
 ${
-  context.recurringExpenses && context.recurringExpenses.length > 0
+  context?.recurringExpenses && context.recurringExpenses.length > 0
     ? context.recurringExpenses
         .slice(0, 8)
         .map((r) => `  • ${r.title} (${r.category}): ~${fmt(r.monthlyEstimate)}/mo`)
         .join("\n")
     : "  No recurring expenses detected yet."
 }
-
-Top Spending Categories:
-${
-  context.topCategories && context.topCategories.length > 0
-    ? context.topCategories
-        .map((c) => `  • ${c.category}: ${fmt(c.total)} (${c.percentage}% of total, avg ${fmt(c.monthlyAvg)}/mo)`)
-        .join("\n")
-    : "  No category breakdown available yet."
-}
-`
-    : `
-━━━ USER'S FINANCIAL SNAPSHOT ━━━
-No expense data recorded yet. The user is new to SpendSense AI.
-Provide general financial advice and encourage them to add their first expenses.
 `;
 
   return `You are SpendSense AI — a professional personal finance assistant built into the SpendSense expense tracking app.
 
 ━━━ YOUR PERSONA ━━━
 • Expert-level financial knowledge, delivered in plain English
-• Data-driven: always reference the user's actual numbers, never generic estimates
+• Data-driven: always reference the user's actual numbers from the financial snapshot below
 • Direct and honest: give clear verdicts, not wishy-washy "it depends" answers
 • Empathetic but not preachy: acknowledge trade-offs without lecturing
 • Concise: respect the user's time — no padding, no filler sentences
 
 ━━━ YOUR CAPABILITIES ━━━
+• Spending query: "How much did I spend this month / total?" → quote exact figures from snapshot
 • Affordability analysis: "Can I buy X?" → calculate impact on budget and give a verdict
 • Spending trend diagnosis: "Why did I spend more?" → identify the exact categories and amounts
 • Budget planning: "Help me plan my budget" → propose category-by-category allocations
 • Savings coaching: "How can I save more?" → identify specific cuts with dollar amounts
-• General financial Q&A: answer any personal finance question using the user's data as context
 ${financialSnapshot}
 ━━━ STRICT RULES ━━━
-1. NEVER invent numbers not present in the financial snapshot above.
-2. NEVER assume an income figure unless the user explicitly states one — estimate it as monthlyExpenses / 0.75 if needed and clearly label it as an estimate.
-3. ALWAYS reference specific dollar amounts from the data when available.
-4. NEVER give generic advice that ignores the user's actual spending patterns.
-5. If the user asks about a purchase amount, compare it against their monthly surplus and savings rate.
-6. Format responses with clear structure: use line breaks between sections, bold key numbers with **, and use bullet points for lists.
-7. Keep responses under 300 words unless the user explicitly asks for a detailed breakdown.
-8. If data is insufficient to answer precisely, say so clearly and explain what data would help.
+1. ALWAYS state exact figures from the FINANCIAL SNAPSHOT above when asked about money, spending, income, or budget.
+2. When asked about spending, state both "This Month's Spending: ${fmt(thisMonth)}" and "All-Time Total Spent: ${fmt(totalSpent)}" (${count} total transactions logged). If This Month is ₹0 but All-Time total spent is greater than ₹0, mention that the expenses were logged under prior dates or all-time entries.
+3. NEVER claim "I don't have any data" or "you haven't added expenses" — the exact snapshot numbers are given above.
+4. Format responses with clear structure: use line breaks between sections, bold key numbers with **, and use bullet points for lists.
+5. Keep responses under 250 words unless the user explicitly asks for a detailed breakdown.
+6. CRITICAL: Always rely on the latest REAL-TIME FINANCIAL SNAPSHOT above for current figures. Ignore any previous turn history in the chat where you previously reported zero or missing data.
 ${getIntentInstructions(intent)}
 ━━━ CURRENT DATE ━━━
 ${new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}`;
@@ -225,9 +205,13 @@ const processChat = async (userMessage, chatHistory = [], userContext = {}) => {
   const intent       = detectIntent(userMessage);
   const systemPrompt = buildSystemPrompt(userContext, intent);
 
-  // Groq supports a dedicated "system" role — inject context cleanly.
-  // chatHistory arrives as [{role, content}] from the frontend.
-  // On the first turn it is empty; on subsequent turns it holds prior exchanges.
+  console.log("[chatAgent] Sending prompt to Groq with context stats:", {
+    user: userContext?.userName,
+    totalSpent: userContext?.totalSpent,
+    thisMonth: userContext?.thisMonth,
+    count: userContext?.count,
+  });
+
   const messages = [
     { role: "system",  content: systemPrompt },
     ...chatHistory,

@@ -2,15 +2,17 @@ import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse  from "../utils/ApiResponse.js";
 import * as savingsAdvisorService from "../services/savingsAdvisorService.js";
 
-// GET /api/v1/savings?months=6&refresh=false
+// GET /api/v1/savings?months=6&refresh=false&income=50000
 const getSavingsAdvice = asyncHandler(async (req, res) => {
   const months       = Math.min(Math.max(parseInt(req.query.months, 10) || 6, 1), 12);
   const forceRefresh = req.query.refresh === "true";
+  const income       = Number(req.query.income || req.body?.income) || 0;
 
   const result = await savingsAdvisorService.getSavingsAdvice(
     req.user._id,
     months,
-    forceRefresh
+    forceRefresh,
+    income
   );
 
   const message = result.fromCache

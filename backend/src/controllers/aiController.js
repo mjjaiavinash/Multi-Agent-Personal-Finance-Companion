@@ -29,6 +29,7 @@ const getPredictions = asyncHandler(async (req, res) => {
 // Body: { message: string, history?: Array<{role, parts}> }
 const chat = asyncHandler(async (req, res) => {
   const { message, history = [] } = req.body;
+  console.log("[AIChatController] Processing chat for User ID:", req.user._id);
   const reply = await aiService.chat(req.user._id, message, history);
   ApiResponse.ok(res, { reply }, "Chat response generated.");
 });

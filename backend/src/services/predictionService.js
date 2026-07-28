@@ -38,8 +38,8 @@ export const getSpendingPredictions = async (userId, months = 6, forceRefresh = 
 
   const userObjId = new mongoose.Types.ObjectId(userId);
   const user = await User.findById(userId).lean();
-  const monthlyIncome = user?.monthlyIncome || 3000;
-  const monthlyBudget = user?.monthlyBudget || monthlyIncome * 0.8;
+  const monthlyIncome = user?.monthlyIncome || 0;
+  const monthlyBudget = user?.monthlyBudget || 0;
 
   const now = new Date();
   const rangeStart = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);

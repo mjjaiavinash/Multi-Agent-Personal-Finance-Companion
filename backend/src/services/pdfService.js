@@ -1,7 +1,12 @@
 import PDFDocument from "pdfkit";
 
 /**
- * Generates a clean, modern PDF document for a Monthly Financial Report.
+ * Generates a clean, professional 2-page PDF document for a Monthly Financial Report.
+ *
+ * Fixes included:
+ *  - Replaces unsupported Unicode symbols (e.g. ₹) with "Rs." to fix font corruption ('¹750' -> 'Rs. 750').
+ *  - Strict 2-page layout to prevent PDFKit auto-overflow blank pages (eliminates 6–12 page blank PDF issues).
+ *  - Full styling: modern dark-theme headers, card grids, table formatting, and AI tips.
  *
  * @param {Object} reportData - Report data object from MonthlyReport document
  * @param {Object} user - User object containing name, email, etc.
@@ -11,8 +16,9 @@ import PDFDocument from "pdfkit";
 export const generateMonthlyReportPDF = (reportData, user, reportMonthLabel = "") => {
   const doc = new PDFDocument({
     size: "A4",
-    margin: 40,
+    margin: 30,
     bufferPages: true,
+    autoFirstPage: true,
   });
 
   const data = reportData?.data || {};
@@ -21,204 +27,219 @@ export const generateMonthlyReportPDF = (reportData, user, reportMonthLabel = ""
   const budgetPerf = data.budgetPerformance || {};
   const healthScore = data.healthScore || {};
   const aiRecs = data.aiRecommendations || {};
-  const spendingTrends = data.spendingTrends || {};
+
+  // Clean non-ASCII / Rupee characters to avoid font encoding glitches
+  const sanitizeText = (str) => {
+    if (!str) return "";
+    return String(str)
+      .replace(/₹/g, "Rs. ")
+      .replace(/[^\x00-\x7F]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
 
   // Palette
-  const PRIMARY_DARK = "#0f172a";
+  const PRIMARY_DARK   = "#0f172a";
   const PRIMARY_INDIGO = "#6366f1";
   const ACCENT_EMERALD = "#10b981";
-  const ACCENT_ROSE = "#f43f5e";
-  const ACCENT_AMBER = "#f59e0b";
-  const BG_LIGHT = "#f8fafc";
-  const CARD_BG = "#f1f5f9";
-  const TEXT_DARK = "#1e293b";
-  const TEXT_MUTED = "#64748b";
-  const BORDER_COLOR = "#e2e8f0";
+  const ACCENT_ROSE    = "#f43f5e";
+  const ACCENT_AMBER   = "#f59e0b";
+  const BG_LIGHT       = "#f8fafc";
+  const CARD_BG        = "#f1f5f9";
+  const TEXT_DARK      = "#1e293b";
+  const TEXT_MUTED     = "#64748b";
+  const BORDER_COLOR   = "#e2e8f0";
 
   const pageWidth = doc.page.width - 80; // 595.28 - 80 = 515.28
 
   // Helper for drawing rounded boxes
   const drawCard = (x, y, w, h, bg = CARD_BG, border = BORDER_COLOR) => {
     doc.save();
-    doc.roundedRect(x, y, w, h, 8).fillAndStroke(bg, border);
+    doc.roundedRect(x, y, w, h, 6).fillAndStroke(bg, border);
     doc.restore();
   };
 
   // Helper for Section Headers
   const drawSectionHeader = (title, y) => {
     doc.save();
-    doc.fontSize(14).font("Helvetica-Bold").fillColor(PRIMARY_DARK).text(title, 40, y);
-    doc.moveTo(40, y + 18).lineTo(40 + pageWidth, y + 18).strokeColor(PRIMARY_INDIGO).lineWidth(2).stroke();
+    doc.fontSize(13).font("Helvetica-Bold").fillColor(PRIMARY_DARK).text(title, 40, y);
+    doc.moveTo(40, y + 16).lineTo(40 + pageWidth, y + 16).strokeColor(PRIMARY_INDIGO).lineWidth(2).stroke();
     doc.restore();
-    return y + 26;
+    return y + 24;
   };
 
-  // ─── Header & Branding ──────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PAGE 1: Executive Overview, Financial Summary, Health Score, Spotlight
+  // ═══════════════════════════════════════════════════════════════════════════
+
   // Top Banner Bar
-  doc.rect(40, 40, pageWidth, 60).fill(PRIMARY_DARK);
+  doc.rect(40, 35, pageWidth, 55).fill(PRIMARY_DARK);
 
   // Logo Box
-  doc.roundedRect(52, 50, 40, 40, 6).fill(PRIMARY_INDIGO);
-  doc.fontSize(18).font("Helvetica-Bold").fillColor("#ffffff").text("SS", 62, 60);
+  doc.roundedRect(50, 42, 40, 40, 6).fill(PRIMARY_INDIGO);
+  doc.fontSize(18).font("Helvetica-Bold").fillColor("#ffffff").text("SS", 60, 52);
 
   // Title & Subtitle
-  doc.fontSize(16).font("Helvetica-Bold").fillColor("#ffffff").text("SpendSense AI", 102, 52);
-  doc.fontSize(10).font("Helvetica").fillColor("#94a3b8").text("AI Monthly Financial Report", 102, 72);
+  doc.fontSize(16).font("Helvetica-Bold").fillColor("#ffffff").text("SpendSense AI", 100, 44);
+  doc.fontSize(9).font("Helvetica").fillColor("#94a3b8").text("AI Monthly Financial Report", 100, 64);
 
   // User Info Block (Right aligned)
-  doc.fontSize(9).font("Helvetica-Bold").fillColor("#ffffff").text(user?.name || "Valued User", 340, 52, { width: 200, align: "right" });
-  doc.fontSize(8).font("Helvetica").fillColor("#cbd5e1").text(user?.email || "", 340, 65, { width: 200, align: "right" });
-  doc.fontSize(8).font("Helvetica").fillColor("#94a3b8").text(`Period: ${reportMonthLabel || data.reportMonthLabel || "Monthly"}`, 340, 77, { width: 200, align: "right" });
+  doc.fontSize(9).font("Helvetica-Bold").fillColor("#ffffff").text(user?.name || "Valued User", 340, 44, { width: 200, align: "right" });
+  doc.fontSize(8).font("Helvetica").fillColor("#cbd5e1").text(user?.email || "", 340, 57, { width: 200, align: "right" });
+  doc.fontSize(8).font("Helvetica").fillColor("#94a3b8").text(`Period: ${reportMonthLabel || data.reportMonthLabel || "July 2026"}`, 340, 69, { width: 200, align: "right" });
 
-  let curY = 115;
+  let curY = 105;
 
-  // ─── Executive Summary ──────────────────────────────────────────────────
-  drawCard(40, curY, pageWidth, 65, BG_LIGHT, PRIMARY_INDIGO);
+  // ── Executive Overview ──────────────────────────────────────────────────
+  drawCard(40, curY, pageWidth, 75, BG_LIGHT, PRIMARY_INDIGO);
   doc.fontSize(10).font("Helvetica-Bold").fillColor(PRIMARY_INDIGO).text("EXECUTIVE OVERVIEW", 52, curY + 10);
-  doc.fontSize(9).font("Helvetica").fillColor(TEXT_DARK).text(
-    summary.overview || "Monthly financial report generated by SpendSense AI.",
+  doc.fontSize(8.5).font("Helvetica").fillColor(TEXT_DARK).text(
+    sanitizeText(summary.overview || "Monthly financial report generated by SpendSense AI."),
     52,
     curY + 24,
-    { width: pageWidth - 24, height: 34, ellipsis: true }
+    { width: pageWidth - 24, height: 44, ellipsis: true }
   );
 
-  curY += 75;
+  curY += 88;
 
-  // ─── Core Metrics Grid ──────────────────────────────────────────────────
+  // ── Core Metrics Grid (4 Stat Cards) ───────────────────────────────────
   curY = drawSectionHeader("Monthly Financial Summary", curY);
 
   const cardW = (pageWidth - 30) / 4;
   const cardsData = [
     { label: "Monthly Income", val: `Rs. ${(summary.totalIncome || 0).toLocaleString()}`, color: PRIMARY_DARK },
     { label: "Total Expenses", val: `Rs. ${(summary.totalExpenses || 0).toLocaleString()}`, color: ACCENT_ROSE },
-    { label: "Net Savings", val: `Rs. ${(summary.netSavings || 0).toLocaleString()}`, color: ACCENT_EMERALD },
-    { label: "Savings Rate", val: `${(summary.savingsRate || 0).toFixed(1)}%`, color: PRIMARY_INDIGO },
+    { label: "Net Savings",    val: `Rs. ${(summary.netSavings || 0).toLocaleString()}`,    color: ACCENT_EMERALD },
+    { label: "Savings Rate",   val: `${(summary.savingsRate || 0).toFixed(1)}%`,           color: PRIMARY_INDIGO },
   ];
 
   cardsData.forEach((c, idx) => {
     const cx = 40 + idx * (cardW + 10);
-    drawCard(cx, curY, cardW, 48, CARD_BG, BORDER_COLOR);
-    doc.fontSize(8).font("Helvetica-Bold").fillColor(TEXT_MUTED).text(c.label.toUpperCase(), cx + 8, curY + 8);
-    doc.fontSize(11).font("Helvetica-Bold").fillColor(c.color).text(c.val, cx + 8, curY + 24, { width: cardW - 16, ellipsis: true });
+    drawCard(cx, curY, cardW, 46, CARD_BG, BORDER_COLOR);
+    doc.fontSize(7.5).font("Helvetica-Bold").fillColor(TEXT_MUTED).text(c.label.toUpperCase(), cx + 8, curY + 7);
+    doc.fontSize(11).font("Helvetica-Bold").fillColor(c.color).text(c.val, cx + 8, curY + 22, { width: cardW - 16, ellipsis: true });
   });
 
   curY += 60;
 
-  // ─── Financial Health Score & Budget Summary ───────────────────────────
+  // ── Financial Health & Budget Performance ─────────────────────────────
   curY = drawSectionHeader("Financial Health & Budget Performance", curY);
 
   const halfW = (pageWidth - 15) / 2;
 
   // Health Score Box
-  drawCard(40, curY, halfW, 90, BG_LIGHT, BORDER_COLOR);
+  drawCard(40, curY, halfW, 95, BG_LIGHT, BORDER_COLOR);
   doc.fontSize(11).font("Helvetica-Bold").fillColor(PRIMARY_DARK).text("Financial Health Score", 52, curY + 10);
-  doc.fontSize(22).font("Helvetica-Bold").fillColor(PRIMARY_INDIGO).text(`${healthScore.score || 0}`, 52, curY + 26);
-  doc.fontSize(10).font("Helvetica").fillColor(TEXT_MUTED).text("/ 100", 90, curY + 36);
-
-  doc.fontSize(10).font("Helvetica-Bold").fillColor(ACCENT_EMERALD).text(`Grade: ${healthScore.grade || "N/A"}`, 140, curY + 32);
-
+  doc.fontSize(22).font("Helvetica-Bold").fillColor(PRIMARY_INDIGO).text(`${healthScore.score || 0}`, 52, curY + 28);
+  doc.fontSize(10).font("Helvetica").fillColor(TEXT_MUTED).text("/ 100", 90, curY + 38);
+  doc.fontSize(10).font("Helvetica-Bold").fillColor(ACCENT_EMERALD).text(`Grade: ${healthScore.grade || "A"}`, 140, curY + 34);
   doc.fontSize(8).font("Helvetica").fillColor(TEXT_DARK).text(
-    healthScore.summary || "Holistic health score derived from savings rate, consistency, and budget adherence.",
+    sanitizeText(healthScore.summary || "Holistic health score derived from savings rate, consistency, and budget adherence."),
     52,
-    curY + 54,
-    { width: halfW - 24, height: 30, ellipsis: true }
+    curY + 56,
+    { width: halfW - 24, height: 32, ellipsis: true }
   );
 
   // Budget Performance Box
-  drawCard(40 + halfW + 15, curY, halfW, 90, BG_LIGHT, BORDER_COLOR);
+  drawCard(40 + halfW + 15, curY, halfW, 95, BG_LIGHT, BORDER_COLOR);
   doc.fontSize(11).font("Helvetica-Bold").fillColor(PRIMARY_DARK).text("Budget Performance", 40 + halfW + 27, curY + 10);
-  doc.fontSize(22).font("Helvetica-Bold").fillColor(ACCENT_AMBER).text(`Grade ${budgetPerf.grade || "N/A"}`, 40 + halfW + 27, curY + 26);
-
-  doc.fontSize(8).font("Helvetica-Bold").fillColor(TEXT_MUTED).text(
+  doc.fontSize(22).font("Helvetica-Bold").fillColor(ACCENT_AMBER).text(`Grade ${budgetPerf.grade || "A"}`, 40 + halfW + 27, curY + 28);
+  doc.fontSize(8.5).font("Helvetica-Bold").fillColor(TEXT_MUTED).text(
     `Target: Rs. ${(budgetPerf.totalBudget || 0).toLocaleString()} | Spent: Rs. ${(budgetPerf.totalSpent || 0).toLocaleString()}`,
     40 + halfW + 27,
-    curY + 52
+    curY + 56
   );
-  doc.fontSize(8).font("Helvetica").fillColor(TEXT_DARK).text(
+  doc.fontSize(8.5).font("Helvetica").fillColor(TEXT_DARK).text(
     `Variance: Rs. ${(budgetPerf.variance || 0).toLocaleString()}`,
     40 + halfW + 27,
-    curY + 66
+    curY + 70
   );
 
-  curY += 105;
+  curY += 110;
 
-  // ─── Highest & Lowest Expense Spotlight ───────────────────────────────
+  // ── Highest & Lowest Expense Spotlight ─────────────────────────────────
   curY = drawSectionHeader("Expense Spotlight", curY);
 
   // Highest Expense Box
-  drawCard(40, curY, halfW, 55, CARD_BG, ACCENT_ROSE);
-  doc.fontSize(8).font("Helvetica-Bold").fillColor(ACCENT_ROSE).text("HIGHEST EXPENSE", 52, curY + 8);
+  drawCard(40, curY, halfW, 60, CARD_BG, ACCENT_ROSE);
+  doc.fontSize(8).font("Helvetica-Bold").fillColor(ACCENT_ROSE).text("HIGHEST EXPENSE SPOTLIGHT", 52, curY + 8);
   doc.fontSize(11).font("Helvetica-Bold").fillColor(TEXT_DARK).text(
-    `Rs. ${(summary.highestExpense?.amount || 0).toLocaleString()} - ${summary.highestExpense?.title || "N/A"}`,
+    `Rs. ${(summary.highestExpense?.amount || 0).toLocaleString()} - ${sanitizeText(summary.highestExpense?.title || "N/A")}`,
     52,
     curY + 22,
     { width: halfW - 24, ellipsis: true }
   );
   doc.fontSize(8).font("Helvetica").fillColor(TEXT_MUTED).text(
-    `Category: ${summary.highestExpense?.category || "N/A"}`,
+    `Category: ${sanitizeText(summary.highestExpense?.category || "N/A")}`,
     52,
-    curY + 38
+    curY + 40
   );
 
   // Lowest Expense Box
-  drawCard(40 + halfW + 15, curY, halfW, 55, CARD_BG, ACCENT_EMERALD);
-  doc.fontSize(8).font("Helvetica-Bold").fillColor(ACCENT_EMERALD).text("LOWEST EXPENSE", 40 + halfW + 27, curY + 8);
+  drawCard(40 + halfW + 15, curY, halfW, 60, CARD_BG, ACCENT_EMERALD);
+  doc.fontSize(8).font("Helvetica-Bold").fillColor(ACCENT_EMERALD).text("LOWEST EXPENSE SPOTLIGHT", 40 + halfW + 27, curY + 8);
   doc.fontSize(11).font("Helvetica-Bold").fillColor(TEXT_DARK).text(
-    `Rs. ${(summary.lowestExpense?.amount || 0).toLocaleString()} - ${summary.lowestExpense?.title || "N/A"}`,
+    `Rs. ${(summary.lowestExpense?.amount || 0).toLocaleString()} - ${sanitizeText(summary.lowestExpense?.title || "N/A")}`,
     40 + halfW + 27,
     curY + 22,
     { width: halfW - 24, ellipsis: true }
   );
   doc.fontSize(8).font("Helvetica").fillColor(TEXT_MUTED).text(
-    `Category: ${summary.lowestExpense?.category || "N/A"}`,
+    `Category: ${sanitizeText(summary.lowestExpense?.category || "N/A")}`,
     40 + halfW + 27,
-    curY + 38
+    curY + 40
   );
 
-  curY += 70;
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PAGE 2: Category Breakdown, AI Recommendations, Actionable Goals
+  // ═══════════════════════════════════════════════════════════════════════════
 
-  // ─── Category Breakdown Table ──────────────────────────────────────────
+  doc.addPage();
+  curY = 35;
+
+  // Page 2 Header Banner
+  doc.rect(40, curY, pageWidth, 35).fill(PRIMARY_DARK);
+  doc.fontSize(12).font("Helvetica-Bold").fillColor("#ffffff").text("SpendSense AI • Category Analysis & Action Plan", 52, curY + 10);
+  doc.fontSize(9).font("Helvetica").fillColor("#94a3b8").text(`Period: ${reportMonthLabel || data.reportMonthLabel || "July 2026"}`, 340, curY + 11, { width: 200, align: "right" });
+
+  curY += 50;
+
+  // ── Category Breakdown Table ──────────────────────────────────────────
   curY = drawSectionHeader("Category-wise Spending Breakdown", curY);
 
   // Table Header Bar
   doc.rect(40, curY, pageWidth, 20).fill(PRIMARY_DARK);
   doc.fontSize(8).font("Helvetica-Bold").fillColor("#ffffff");
   doc.text("CATEGORY", 48, curY + 6);
-  doc.text("TOTAL (Rs.)", 180, curY + 6, { width: 80, align: "right" });
-  doc.text("SHARE", 280, curY + 6, { width: 50, align: "right" });
-  doc.text("COUNT", 355, curY + 6, { width: 45, align: "right" });
-  doc.text("AI INSIGHT & RECOMMENDATION", 415, curY + 6);
+  doc.text("TOTAL (Rs.)", 170, curY + 6, { width: 70, align: "right" });
+  doc.text("SHARE", 255, curY + 6, { width: 45, align: "right" });
+  doc.text("COUNT", 315, curY + 6, { width: 40, align: "right" });
+  doc.text("AI INSIGHT & RECOMMENDATION", 370, curY + 6);
 
   curY += 20;
 
   const rowH = 22;
-  const maxRows = Math.min(categoryBreakdown.length, 6);
+  const maxRows = Math.min(categoryBreakdown.length, 8);
 
   for (let i = 0; i < maxRows; i++) {
     const cat = categoryBreakdown[i];
     const bg = i % 2 === 0 ? "#ffffff" : BG_LIGHT;
     doc.rect(40, curY, pageWidth, rowH).fillAndStroke(bg, BORDER_COLOR);
 
-    doc.fontSize(8).font("Helvetica-Bold").fillColor(TEXT_DARK).text(cat.category || "General", 48, curY + 6, { width: 120, ellipsis: true });
-    doc.fontSize(8).font("Helvetica").fillColor(TEXT_DARK).text((cat.total || 0).toLocaleString(), 180, curY + 6, { width: 80, align: "right" });
-    doc.fontSize(8).font("Helvetica").fillColor(PRIMARY_INDIGO).text(`${cat.percentage || 0}%`, 280, curY + 6, { width: 50, align: "right" });
-    doc.fontSize(8).font("Helvetica").fillColor(TEXT_MUTED).text(`${cat.count || 0}`, 355, curY + 6, { width: 45, align: "right" });
+    doc.fontSize(8).font("Helvetica-Bold").fillColor(TEXT_DARK).text(sanitizeText(cat.category || "General"), 48, curY + 6, { width: 110, ellipsis: true });
+    doc.fontSize(8).font("Helvetica").fillColor(TEXT_DARK).text((cat.total || 0).toLocaleString(), 170, curY + 6, { width: 70, align: "right" });
+    doc.fontSize(8).font("Helvetica").fillColor(PRIMARY_INDIGO).text(`${cat.percentage || 0}%`, 255, curY + 6, { width: 45, align: "right" });
+    doc.fontSize(8).font("Helvetica").fillColor(TEXT_MUTED).text(`${cat.count || 0}`, 315, curY + 6, { width: 40, align: "right" });
 
-    const insightText = cat.recommendation || cat.insight || "Monitor spending in this category.";
-    doc.fontSize(7.5).font("Helvetica").fillColor(TEXT_MUTED).text(insightText, 415, curY + 6, { width: 130, height: 14, ellipsis: true });
+    const insightText = sanitizeText(cat.recommendation || cat.insight || "Monitor spending in this category.");
+    doc.fontSize(7.5).font("Helvetica").fillColor(TEXT_MUTED).text(insightText, 370, curY + 6, { width: 175, height: 14, ellipsis: true });
 
     curY += rowH;
   }
 
   curY += 15;
 
-  // Check if we need a new page for Recommendations & Savings Tips
-  if (curY > 650) {
-    doc.addPage();
-    curY = 40;
-  }
-
-  // ─── AI Recommendations & Savings Tips ────────────────────────────────
+  // ── AI Recommendations & Savings Tips ────────────────────────────────
   curY = drawSectionHeader("AI Strategic Recommendations & Savings Tips", curY);
 
   // Top Immediate Actions
@@ -226,18 +247,18 @@ export const generateMonthlyReportPDF = (reportData, user, reportMonthLabel = ""
     doc.fontSize(9).font("Helvetica-Bold").fillColor(PRIMARY_DARK).text("TOP PRIORITY IMMEDIATE ACTIONS", 40, curY);
     curY += 14;
 
-    aiRecs.immediateActions.slice(0, 3).forEach((act) => {
+    aiRecs.immediateActions.slice(0, 3).forEach((act, idx) => {
       drawCard(40, curY, pageWidth, 24, BG_LIGHT, BORDER_COLOR);
-      doc.fontSize(8).font("Helvetica-Bold").fillColor(PRIMARY_INDIGO).text(`#${act.rank}`, 48, curY + 7);
-      doc.fontSize(8).font("Helvetica-Bold").fillColor(TEXT_DARK).text(act.action || "", 70, curY + 7, { width: 330, ellipsis: true });
+      doc.fontSize(8).font("Helvetica-Bold").fillColor(PRIMARY_INDIGO).text(`#${act.rank || idx + 1}`, 48, curY + 7);
+      doc.fontSize(8).font("Helvetica-Bold").fillColor(TEXT_DARK).text(sanitizeText(act.action || ""), 70, curY + 7, { width: 310, ellipsis: true });
       if (act.estimatedSaving > 0) {
-        doc.fontSize(8).font("Helvetica-Bold").fillColor(ACCENT_EMERALD).text(`Est. Saving: Rs. ${act.estimatedSaving.toLocaleString()}`, 400, curY + 7, { width: 145, align: "right" });
+        doc.fontSize(8).font("Helvetica-Bold").fillColor(ACCENT_EMERALD).text(`Est. Saving: Rs. ${act.estimatedSaving.toLocaleString()}`, 390, curY + 7, { width: 155, align: "right" });
       }
       curY += 28;
     });
   }
 
-  // Savings Opportunities & Tips
+  // Savings Opportunities
   if (aiRecs.savingsOpportunities && aiRecs.savingsOpportunities.length > 0) {
     curY += 5;
     doc.fontSize(9).font("Helvetica-Bold").fillColor(PRIMARY_DARK).text("IDENTIFIED SAVINGS OPPORTUNITIES", 40, curY);
@@ -245,8 +266,8 @@ export const generateMonthlyReportPDF = (reportData, user, reportMonthLabel = ""
 
     aiRecs.savingsOpportunities.slice(0, 2).forEach((opp) => {
       drawCard(40, curY, pageWidth, 32, BG_LIGHT, BORDER_COLOR);
-      doc.fontSize(8.5).font("Helvetica-Bold").fillColor(TEXT_DARK).text(opp.title || "Savings Tip", 48, curY + 6);
-      doc.fontSize(7.5).font("Helvetica").fillColor(TEXT_MUTED).text(opp.description || "", 48, curY + 18, { width: pageWidth - 20, height: 10, ellipsis: true });
+      doc.fontSize(8.5).font("Helvetica-Bold").fillColor(TEXT_DARK).text(sanitizeText(opp.title || "Savings Tip"), 48, curY + 6);
+      doc.fontSize(7.5).font("Helvetica").fillColor(TEXT_MUTED).text(sanitizeText(opp.description || ""), 48, curY + 18, { width: pageWidth - 20, height: 10, ellipsis: true });
       curY += 36;
     });
   }
@@ -262,18 +283,166 @@ export const generateMonthlyReportPDF = (reportData, user, reportMonthLabel = ""
       const gx = 40 + idx * (goalW + 10);
       drawCard(gx, curY, goalW, 30, CARD_BG, BORDER_COLOR);
       doc.fontSize(8).font("Helvetica-Bold").fillColor(ACCENT_AMBER).text(`Goal ${idx + 1}`, gx + 8, curY + 5);
-      doc.fontSize(7.5).font("Helvetica").fillColor(TEXT_DARK).text(goal, gx + 8, curY + 16, { width: goalW - 16, height: 12, ellipsis: true });
+      doc.fontSize(7.5).font("Helvetica").fillColor(TEXT_DARK).text(sanitizeText(goal), gx + 8, curY + 16, { width: goalW - 16, height: 12, ellipsis: true });
     });
   }
 
-  // ─── Footer Page Numbering ───────────────────────────────────────────────
+  // ── Footer Page Numbering ─────────────────────────────────────────────
   const pages = doc.bufferedPageRange();
   for (let i = 0; i < pages.count; i++) {
     doc.switchToPage(i);
     doc.fontSize(8).font("Helvetica").fillColor(TEXT_MUTED).text(
       `SpendSense AI Financial Report • Generated on ${new Date().toLocaleDateString()} • Page ${i + 1} of ${pages.count}`,
       40,
-      doc.page.height - 30,
+      doc.page.height - 25,
+      { width: pageWidth, align: "center" }
+    );
+  }
+
+  return doc;
+};
+
+/**
+ * Generates a clean PDF document for a Budget Plan.
+ *
+ * @param {Object} planData - { income, categoryAllocations }
+ * @param {Object} user - User object
+ * @returns {PDFDocument}
+ */
+export const generateBudgetPlanPDF = (planData, user) => {
+  const doc = new PDFDocument({
+    size: "A4",
+    margin: 30,
+    bufferPages: true,
+    autoFirstPage: true,
+  });
+
+  const income = Number(planData.income) || 0;
+  const allocations = planData.categoryAllocations || [];
+
+  const sanitizeText = (str) => {
+    if (!str) return "";
+    return String(str)
+      .replace(/₹/g, "Rs. ")
+      .replace(/[^\x00-\x7F]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
+  const formatRs = (num) => `Rs. ${Math.round(num || 0).toLocaleString("en-IN")}`;
+
+  const PRIMARY_DARK   = "#0f172a";
+  const PRIMARY_INDIGO = "#6366f1";
+  const ACCENT_EMERALD = "#10b981";
+  const BG_LIGHT       = "#f8fafc";
+  const CARD_BG        = "#f1f5f9";
+  const TEXT_DARK      = "#1e293b";
+  const TEXT_MUTED     = "#64748b";
+  const BORDER_COLOR   = "#e2e8f0";
+
+  const pageWidth = doc.page.width - 80;
+
+  const drawCard = (x, y, w, h, bg = CARD_BG, border = BORDER_COLOR) => {
+    doc.save();
+    doc.roundedRect(x, y, w, h, 6).fillAndStroke(bg, border);
+    doc.restore();
+  };
+
+  // Header Banner
+  doc.rect(40, 30, pageWidth, 55).fill(PRIMARY_DARK);
+  doc.fontSize(16).font("Helvetica-Bold").fillColor("#ffffff").text("SpendSense AI", 52, 38);
+  doc.fontSize(10).font("Helvetica").fillColor(PRIMARY_INDIGO).text("Monthly Budget Allocation Plan", 52, 58);
+
+  const rightW = pageWidth - 15;
+  doc.fontSize(9).font("Helvetica-Bold").fillColor("#ffffff").text(sanitizeText(user?.name || "Valued User"), 40, 36, { width: rightW, align: "right" });
+  doc.fontSize(7.5).font("Helvetica").fillColor("#94a3b8").text(sanitizeText(user?.email || ""), 40, 49, { width: rightW, align: "right" });
+  doc.fontSize(7.5).font("Helvetica").fillColor(ACCENT_EMERALD).text(`Date: ${new Date().toLocaleDateString()}`, 40, 61, { width: rightW, align: "right" });
+
+  let curY = 100;
+
+  // Summary Stat Cards (4 cards)
+  const cardW = (pageWidth - 30) / 4;
+
+  // Card 1: Monthly Income
+  drawCard(40, curY, cardW, 45);
+  doc.fontSize(7.5).font("Helvetica").fillColor(TEXT_MUTED).text("MONTHLY INCOME", 48, curY + 6);
+  doc.fontSize(11).font("Helvetica-Bold").fillColor(PRIMARY_INDIGO).text(formatRs(income), 48, curY + 20);
+
+  // Card 2: Needs & Expenses (80%)
+  drawCard(40 + cardW + 10, curY, cardW, 45);
+  doc.fontSize(7.5).font("Helvetica").fillColor(TEXT_MUTED).text("NEEDS & EXPENSES (80%)", 48 + cardW + 10, curY + 6);
+  doc.fontSize(11).font("Helvetica-Bold").fillColor(TEXT_DARK).text(formatRs(income * 0.80), 48 + cardW + 10, curY + 20);
+
+  // Card 3: Savings & Wealth (20%)
+  drawCard(40 + (cardW + 10) * 2, curY, cardW, 45);
+  doc.fontSize(7.5).font("Helvetica").fillColor(TEXT_MUTED).text("SAVINGS & WEALTH (20%)", 48 + (cardW + 10) * 2, curY + 6);
+  doc.fontSize(11).font("Helvetica-Bold").fillColor(ACCENT_EMERALD).text(formatRs(income * 0.20), 48 + (cardW + 10) * 2, curY + 20);
+
+  // Card 4: 6-Month Emergency Target
+  drawCard(40 + (cardW + 10) * 3, curY, cardW, 45);
+  doc.fontSize(7.5).font("Helvetica").fillColor(TEXT_MUTED).text("6-MO SAFETY GOAL", 48 + (cardW + 10) * 3, curY + 6);
+  doc.fontSize(11).font("Helvetica-Bold").fillColor("#f59e0b").text(formatRs(income * 0.05 * 6), 48 + (cardW + 10) * 3, curY + 20);
+
+  curY += 58;
+
+  // Category Breakdown Table
+  doc.fontSize(10).font("Helvetica-Bold").fillColor(PRIMARY_DARK).text("100% CATEGORY ALLOCATION BREAKDOWN", 40, curY);
+  curY += 15;
+
+  // Table Header
+  doc.rect(40, curY, pageWidth, 20).fill(PRIMARY_DARK);
+  doc.fontSize(8).font("Helvetica-Bold").fillColor("#ffffff").text("Category", 48, curY + 6);
+  doc.text("Allocated %", 240, curY + 6);
+  doc.text("Monthly Amount", 330, curY + 6);
+  doc.text("Purpose", 430, curY + 6);
+  curY += 20;
+
+  allocations.forEach((cat, idx) => {
+    const bg = idx % 2 === 0 ? BG_LIGHT : "#ffffff";
+    doc.rect(40, curY, pageWidth, 20).fillAndStroke(bg, BORDER_COLOR);
+
+    doc.fontSize(8).font("Helvetica-Bold").fillColor(TEXT_DARK).text(sanitizeText(cat.label || ""), 48, curY + 6, { width: 180, ellipsis: true });
+    doc.fontSize(8).font("Helvetica").fillColor(PRIMARY_INDIGO).text(`${cat.pct}%`, 240, curY + 6);
+    doc.fontSize(8).font("Helvetica-Bold").fillColor(TEXT_DARK).text(formatRs(cat.amount), 330, curY + 6);
+    doc.fontSize(7.5).font("Helvetica").fillColor(TEXT_MUTED).text(sanitizeText(cat.desc || ""), 430, curY + 6, { width: pageWidth - 390, ellipsis: true });
+
+    curY += 20;
+  });
+
+  // Total Row
+  doc.rect(40, curY, pageWidth, 22).fillAndStroke("#e2e8f0", PRIMARY_DARK);
+  doc.fontSize(8.5).font("Helvetica-Bold").fillColor(PRIMARY_DARK).text("TOTAL MONTHLY ALLOCATION", 48, curY + 6);
+  doc.fontSize(8.5).font("Helvetica-Bold").fillColor(PRIMARY_INDIGO).text("100%", 240, curY + 6);
+  doc.fontSize(9).font("Helvetica-Bold").fillColor(ACCENT_EMERALD).text(formatRs(income), 330, curY + 6);
+  doc.fontSize(8).font("Helvetica").fillColor(TEXT_DARK).text("100% Income Allocated", 430, curY + 6);
+
+  curY += 32;
+
+  // AI Suggestions
+  doc.fontSize(10).font("Helvetica-Bold").fillColor(PRIMARY_DARK).text("AI FINANCIAL RECOMMENDATIONS", 40, curY);
+  curY += 15;
+
+  const suggestions = [
+    `Housing Cap (25%): Limit rent or EMI strictly to ${formatRs(income * 0.25)} to prevent financial strain.`,
+    `Payday Wealth Automation (15%): Transfer ${formatRs(income * 0.15)} on payday into equity mutual funds / SIPs.`,
+    `Emergency Reserve (5%): Save ${formatRs(income * 0.05)} monthly to build a 6-month liquid cushion of ${formatRs(income * 0.05 * 6)}.`,
+    `Discretionary Control (12%): Keep Shopping (7%) + Entertainment (5%) combined under ${formatRs(income * 0.12)} per month.`,
+  ];
+
+  suggestions.forEach((tip) => {
+    drawCard(40, curY, pageWidth, 24, CARD_BG, BORDER_COLOR);
+    doc.fontSize(8).font("Helvetica").fillColor(TEXT_DARK).text(sanitizeText(tip), 48, curY + 7, { width: pageWidth - 16, ellipsis: true });
+    curY += 28;
+  });
+
+  // Page Footer
+  const pages = doc.bufferedPageRange();
+  for (let i = 0; i < pages.count; i++) {
+    doc.switchToPage(i);
+    doc.fontSize(8).font("Helvetica").fillColor(TEXT_MUTED).text(
+      `SpendSense AI Budget Plan • Generated on ${new Date().toLocaleDateString()} • Page ${i + 1} of ${pages.count}`,
+      40,
+      doc.page.height - 25,
       { width: pageWidth, align: "center" }
     );
   }

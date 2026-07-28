@@ -14,6 +14,7 @@ import {
 } from "../api/healthScore";
 import Loader  from "../components/common/Loader";
 import { formatCurrency } from "../utils/helpers";
+import { useAuth } from "../context/AuthContext";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const GRADE_CONFIG = {
@@ -127,28 +128,21 @@ function HistoryTooltip({ active, payload, label }) {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function HealthScorePage() {
+  const { user } = useAuth();
   const [healthScore, setHealthScore] = useState(null);
   const [history,     setHistory]     = useState([]);
   const [loading,     setLoading]     = useState(true);
   const [computing,   setComputing]   = useState(false);
   const [error,       setError]       = useState("");
 
-  const [income,  setIncome]  = useState("");
-  const [budget,  setBudget]  = useState("");
-  const [showForm, setShowForm] = useState(false);
+  const [income,  setIncome]  = useState(user?.monthlyIncome || "");
+  const [budget,  setBudget]  = useState(user?.monthlyBudget || "");
 
-  // ── Load latest + history on mount ─────────────────────────────────────────
+  // ── Load history on mount ───────────────────────────────────────────────
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [latestRes, histRes] = await Promise.all([
-        getLatestHealthScore(),
-        getHealthScoreHistory(10),
-      ]);
-      const hs = latestRes.data?.data?.healthScore;
-      setHealthScore(hs || null);
-      if (!hs) setShowForm(true); // first time — show form immediately
-
+      const histRes = await getHealthScoreHistory(10);
       const raw = histRes.data?.data?.history || [];
       setHistory(
         raw.reverse().map((h) => ({
@@ -158,7 +152,7 @@ export default function HealthScorePage() {
         }))
       );
     } catch {
-      setShowForm(true);
+      // ignore
     } finally {
       setLoading(false);
     }
@@ -179,7 +173,6 @@ export default function HealthScorePage() {
       const res = await computeHealthScore(Number(income), Number(budget) || 0);
       const hs  = res.data?.data?.healthScore;
       setHealthScore(hs);
-      setShowForm(false);
       // Refresh history
       const histRes = await getHealthScoreHistory(10);
       const raw = histRes.data?.data?.history || [];
@@ -211,63 +204,50 @@ export default function HealthScorePage() {
             <Activity size={24} className="text-primary-400" />
             Financial Health Score
           </h1>
-          <p className="text-slate-500 text-sm mt-0.5">AI-powered analysis of your financial wellbeing</p>
-        </div>
-        <div className="flex gap-2">
-          {healthScore && (
-            <button
-              onClick={() => setShowForm((p) => !p)}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-800 border border-surface-700 text-slate-400 hover:text-slate-100 text-sm transition-all"
-            >
-              <RefreshCw size={14} />
-              Recompute
-            </button>
-          )}
+          <p className="text-slate-500 text-sm mt-0.5">Calculate health score based on Monthly Income vs. Budget ratio</p>
         </div>
       </div>
 
       {/* ── Input form ─────────────────────────────────────────────────────── */}
-      {showForm && (
-        <div className="glass rounded-2xl p-6">
-          <p className="text-base font-semibold text-slate-100 mb-4">
-            {healthScore ? "Recompute Your Score" : "Compute Your Health Score"}
-          </p>
-          <form onSubmit={handleCompute} className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1">
-              <label className="text-xs text-slate-400 mb-1 block">Monthly Income (₹) *</label>
-              <input
-                type="number"
-                min="1"
-                placeholder="e.g. 50000"
-                value={income}
-                onChange={(e) => setIncome(e.target.value)}
-                className="w-full bg-surface-700 border border-surface-600 rounded-xl px-4 py-2.5 text-slate-100 text-sm placeholder-slate-500 focus:outline-none focus:border-primary-500 transition-colors"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="text-xs text-slate-400 mb-1 block">Monthly Budget (₹) — optional</label>
-              <input
-                type="number"
-                min="0"
-                placeholder="e.g. 40000"
-                value={budget}
-                onChange={(e) => setBudget(e.target.value)}
-                className="w-full bg-surface-700 border border-surface-600 rounded-xl px-4 py-2.5 text-slate-100 text-sm placeholder-slate-500 focus:outline-none focus:border-primary-500 transition-colors"
-              />
-            </div>
-            <div className="flex items-end">
-              <button
-                type="submit"
-                disabled={computing}
-                className="px-6 py-2.5 bg-primary-600 hover:bg-primary-500 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-2 whitespace-nowrap"
-              >
-                {computing ? <><RefreshCw size={14} className="animate-spin" /> Computing…</> : "Compute Score"}
-              </button>
-            </div>
-          </form>
-          {error && <p className="text-rose-400 text-xs mt-2">{error}</p>}
-        </div>
-      )}
+      <div className="glass rounded-2xl p-6">
+        <p className="text-base font-semibold text-slate-100 mb-4">
+          Recompute Your Score
+        </p>
+        <form onSubmit={handleCompute} className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1">
+            <label className="text-xs text-slate-400 mb-1 block">Monthly Income (₹) *</label>
+            <input
+              type="number"
+              min="1"
+              placeholder="e.g. 50000"
+              value={income}
+              onChange={(e) => setIncome(e.target.value)}
+              className="w-full bg-surface-700 border border-surface-600 rounded-xl px-4 py-2.5 text-slate-100 text-sm placeholder-slate-500 focus:outline-none focus:border-primary-500 transition-colors"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="text-xs text-slate-400 mb-1 block">Monthly Budget (₹) — optional</label>
+            <input
+              type="number"
+              min="0"
+              placeholder="e.g. 40000"
+              value={budget}
+              onChange={(e) => setBudget(e.target.value)}
+              className="w-full bg-surface-700 border border-surface-600 rounded-xl px-4 py-2.5 text-slate-100 text-sm placeholder-slate-500 focus:outline-none focus:border-primary-500 transition-colors"
+            />
+          </div>
+          <div className="flex items-end">
+            <button
+              type="submit"
+              disabled={computing}
+              className="px-6 py-2.5 bg-primary-600 hover:bg-primary-500 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-2 whitespace-nowrap"
+            >
+              {computing ? <><RefreshCw size={14} className="animate-spin" /> Computing…</> : "Compute Score"}
+            </button>
+          </div>
+        </form>
+        {error && <p className="text-rose-400 text-xs mt-2">{error}</p>}
+      </div>
 
       {/* ── Score display ───────────────────────────────────────────────────── */}
       {healthScore && (

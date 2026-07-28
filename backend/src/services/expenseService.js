@@ -57,7 +57,7 @@ const createExpense = async (userId, { title, amount, category, date, notes }) =
 
     // Budget Adherence Checks
     const user = await User.findById(userId).lean();
-    const monthlyBudget = user?.monthlyBudget || 2500;
+    const monthlyBudget = user?.monthlyBudget || 0;
 
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);

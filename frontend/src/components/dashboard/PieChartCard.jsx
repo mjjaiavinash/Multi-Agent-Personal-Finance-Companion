@@ -33,6 +33,7 @@ const renderActiveShape = (props) => {
 };
 
 const CenterLabel = ({ viewBox, total }) => {
+  if (!viewBox || typeof viewBox.cx === "undefined") return null;
   const { cx, cy } = viewBox;
   return (
     <g>

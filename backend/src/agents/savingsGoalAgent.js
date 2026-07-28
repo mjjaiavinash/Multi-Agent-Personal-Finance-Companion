@@ -16,8 +16,8 @@ You are a senior personal finance AI advisor. Help the user reach their savings 
 - Goal Category: ${goal.category}
 
 ━━━ USER FINANCIAL CONTEXT ━━━
-- Monthly Income: ₹${userContext.monthlyIncome || 3000}
-- Average Monthly Spending: ₹${userContext.avgMonthlySpend || 2000}
+- Monthly Income: ₹${userContext.monthlyIncome || 0}
+- Average Monthly Spending: ₹${userContext.avgMonthlySpend || 0}
 - Top Spending Categories: ${userContext.topCategories?.map(c => `${c.category} (₹${c.total})`).join(", ") || "General"}
 
 ━━━ OUTPUT REQUIREMENTS ━━━

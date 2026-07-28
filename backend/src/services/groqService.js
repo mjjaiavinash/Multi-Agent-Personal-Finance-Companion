@@ -30,9 +30,9 @@ const log = {
 const isRetryable = (err) => {
   if (err.name === "AbortError") return false;
   const status = err?.status ?? err?.statusCode;
-  if (status === 429 || (status >= 500 && status <= 599)) return true;
+  if (status === 413 || status === 429 || (status >= 500 && status <= 599)) return true;
   const msg = err.message?.toLowerCase() ?? "";
-  return msg.includes("econnreset") || msg.includes("etimedout") || msg.includes("network");
+  return msg.includes("econnreset") || msg.includes("etimedout") || msg.includes("network") || msg.includes("rate") || msg.includes("limit");
 };
 
 /**
@@ -45,7 +45,7 @@ const toApiError = (err) => {
   if (err.name === "AbortError")  return new ApiError(504, "AI request timed out. Please try again.");
   if (status === 401 || status === 403) return new ApiError(401, "AI service authentication failed. Check your GROQ_API_KEY.");
   if (status === 404)             return new ApiError(502, "AI model not found. Check GROQ_MODEL in .env.");
-  if (status === 429)             return new ApiError(429, "AI rate limit reached. Please wait a moment and try again.");
+  if (status === 413 || status === 429) return new ApiError(429, "AI rate limit reached. Please wait a moment and try again.");
   if (status >= 500)              return new ApiError(503, "AI service unavailable. Please try again shortly.");
   return ApiError.internal("AI service error. Please try again.");
 };

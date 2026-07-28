@@ -82,9 +82,8 @@ export default function SavingsGoals() {
     setError(null);
     try {
       const res = await getSavingsGoals();
-      if (res.data?.success) {
-        setGoals(res.data.goals || []);
-      }
+      const goalsList = res.data?.data?.goals ?? res.data?.goals ?? [];
+      setGoals(goalsList);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load savings goals.");
     } finally {

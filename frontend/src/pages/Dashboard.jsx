@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Wallet, TrendingDown, TrendingUp, PiggyBank,
-  ArrowRight, RefreshCw,
+  ArrowRight, RefreshCw, Pencil, X, Check, Save
 } from "lucide-react";
 
 import StatCard       from "../components/common/StatCard";
@@ -20,6 +20,7 @@ import NotificationWidget from "../components/dashboard/NotificationWidget";
 import { getExpenses, getExpenseSummary } from "../api/expenses";
 import { getLatestHealthScore }           from "../api/healthScore";
 import { getAIPredictions }               from "../api/ai";
+import { updateProfile }                  from "../api/auth";
 import { formatCurrency } from "../utils/helpers";
 import { useAuth } from "../context/AuthContext";
 
@@ -32,7 +33,7 @@ const getGreeting = () => {
 };
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const location  = useLocation();
   const [summary,      setSummary]      = useState(null);
   const [recent,       setRecent]       = useState([]);
@@ -41,13 +42,51 @@ export default function Dashboard() {
   const [loading,      setLoading]      = useState(true);
   const [refreshing,   setRefreshing]   = useState(false);
 
+  // Budget Modal State
+  const [showBudgetModal, setShowBudgetModal] = useState(false);
+  const [budgetVal,       setBudgetVal]       = useState(user?.monthlyBudget || 0);
+  const [incomeVal,       setIncomeVal]       = useState(user?.monthlyIncome || 0);
+  const [savingBudget,    setSavingBudget]    = useState(false);
+  const [budgetErr,       setBudgetErr]       = useState("");
+
+  // Sync inputs with user object when user changes
+  useEffect(() => {
+    if (user) {
+      setBudgetVal(user.monthlyBudget ?? 0);
+      setIncomeVal(user.monthlyIncome ?? 0);
+    }
+  }, [user]);
+
+  const handleSaveBudget = async (e) => {
+    e.preventDefault();
+    setBudgetErr("");
+    setSavingBudget(true);
+    try {
+      const bNum = Number(budgetVal);
+      const iNum = Number(incomeVal);
+      const { data } = await updateProfile({ monthlyBudget: bNum, monthlyIncome: iNum });
+      const updatedUser = data?.data?.user ?? data?.user;
+      if (updatedUser) {
+        updateUser(updatedUser);
+      } else {
+        updateUser({ monthlyBudget: bNum, monthlyIncome: iNum });
+      }
+      setShowBudgetModal(false);
+      fetchData(true);
+    } catch (err) {
+      setBudgetErr(err.response?.data?.message || "Failed to update budget.");
+    } finally {
+      setSavingBudget(false);
+    }
+  };
+
   // Compute today's label inside the component so it updates if the tab is open overnight
   const todayLabel = useMemo(() => new Date().toLocaleDateString("en-US", {
     weekday: "long", month: "long", day: "numeric",
   }), []);
 
-  // Use the user's actual monthly budget; fall back to 3000 if not yet configured
-  const MONTHLY_BUDGET = useMemo(() => user?.monthlyBudget || 3000, [user]);
+  // Use the user's actual monthly budget (0 if not configured)
+  const MONTHLY_BUDGET = useMemo(() => user?.monthlyBudget || 0, [user]);
 
   const fetchData = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -105,33 +144,20 @@ export default function Dashboard() {
   const weeklyBarData = useMemo(() =>
     predictions?.forecastSeries
       ? predictions.forecastSeries.filter(f => f.actual !== null).map(f => ({ period: f.period, total: f.actual }))
-      : [
-          { period: "Week 1", total: Math.round(thisMonth * 0.22) },
-          { period: "Week 2", total: Math.round(thisMonth * 0.28) },
-          { period: "Week 3", total: Math.round(thisMonth * 0.25) },
-          { period: "Week 4", total: Math.round(thisMonth * 0.25) },
-        ]
-  , [predictions, thisMonth]);
+      : []
+  , [predictions]);
 
   const savingsTrendData = useMemo(() =>
     monthlyBarData.map(m => {
-      const income = user?.monthlyIncome || 3000;
+      const income = user?.monthlyIncome || 0;
       const spent  = m.total || 0;
       return { month: m.month, income, spent, savings: Math.max(0, income - spent) };
     })
   , [monthlyBarData, user?.monthlyIncome]);
 
   const predictionSeriesData = useMemo(() =>
-    predictions?.forecastSeries || [
-      { period: "W-3",      actual: 500,  predicted: null },
-      { period: "W-2",      actual: 650,  predicted: null },
-      { period: "W-1",      actual: 480,  predicted: null },
-      { period: "W0 (Cur)", actual: thisMonth > 0 ? Math.round(thisMonth / 4) : 550, predicted: 550 },
-      { period: "W+1",      actual: null, predicted: predictions?.nextWeekExpense?.predictedAmount || 600 },
-      { period: "W+2",      actual: null, predicted: 580 },
-      { period: "W+3",      actual: null, predicted: 620 },
-    ]
-  , [predictions, thisMonth]);
+    predictions?.forecastSeries || []
+  , [predictions]);
 
   if (loading) return <Loader />;
 
@@ -162,6 +188,27 @@ export default function Dashboard() {
         </button>
       </div>
 
+      {/* ── Setup Banner if no budget configured ─────────────────────────────── */}
+      {(!user?.monthlyBudget && !user?.monthlyIncome) && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-primary-900/40 via-surface-800 to-surface-800 border border-primary-500/30 backdrop-blur-md">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary-500/20 border border-primary-500/30 flex items-center justify-center text-primary-400 flex-shrink-0">
+              <Wallet size={20} />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-slate-100">Set Up Your Financial Target</h4>
+              <p className="text-xs text-slate-400 mt-0.5">Configure your monthly income & budget target to calculate your real-time available balance.</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowBudgetModal(true)}
+            className="px-4 py-2 rounded-xl bg-primary-600 hover:bg-primary-500 text-white text-xs font-semibold shadow-lg shadow-primary-900/40 transition-all flex items-center gap-2 whitespace-nowrap"
+          >
+            <Pencil size={13} /> Set Target Budget
+          </button>
+        </div>
+      )}
+
       {/* ── Quick Actions ───────────────────────────────────────────────────── */}
       <QuickActions />
 
@@ -173,6 +220,15 @@ export default function Dashboard() {
           subtitle="Remaining this month"
           icon={Wallet}
           color="emerald"
+          action={
+            <button
+              onClick={() => setShowBudgetModal(true)}
+              title="Set / Edit Monthly Budget"
+              className="p-1 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-surface-700/60 transition-colors"
+            >
+              <Pencil size={13} />
+            </button>
+          }
           trend={availableBalance > 0
             ? { label: "Within budget", positive: true }
             : { label: "Over budget", positive: false }
@@ -278,6 +334,94 @@ export default function Dashboard() {
 
       {/* Smart Notifications Widget */}
       <NotificationWidget />
+
+      {/* ── Set / Edit Budget Modal ────────────────────────────────────────── */}
+      {showBudgetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
+          <div className="glass rounded-2xl p-6 w-full max-w-md border border-surface-700/80 shadow-2xl space-y-5 relative">
+            <div className="flex items-center justify-between border-b border-surface-700/60 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <Wallet size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-100">Set Financial Target</h3>
+                  <p className="text-xs text-slate-400">Configure your budget & income</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowBudgetModal(false)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-surface-700/50 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {budgetErr && (
+              <div className="px-3.5 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs">
+                {budgetErr}
+              </div>
+            )}
+
+            <form onSubmit={handleSaveBudget} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Monthly Budget Target ($)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  required
+                  value={budgetVal}
+                  onChange={(e) => setBudgetVal(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-slate-100 text-sm focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all"
+                  placeholder="e.g. 3000"
+                />
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Available Balance = Budget Target - Spent This Month
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Monthly Income ($)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  required
+                  value={incomeVal}
+                  onChange={(e) => setIncomeVal(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-slate-100 text-sm focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all"
+                  placeholder="e.g. 4000"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowBudgetModal(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-surface-800 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingBudget}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-50"
+                >
+                  {savingBudget ? (
+                    <RefreshCw size={14} className="animate-spin" />
+                  ) : (
+                    <Save size={14} />
+                  )}
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

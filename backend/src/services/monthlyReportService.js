@@ -1,6 +1,7 @@
 import mongoose                  from "mongoose";
 import Expense                   from "../models/Expense.js";
 import MonthlyReport             from "../models/MonthlyReport.js";
+import User                      from "../models/User.js";
 import { generateMonthlyReport } from "../agents/monthlyReportAgent.js";
 import ApiError                  from "../utils/ApiError.js";
 import { createNotification }    from "./notificationService.js";
@@ -22,6 +23,10 @@ const scoreExpenseToIncome     = (e, i) => !i ? 40 : e <= i * 0.5 ? 100 : e >= i
 
 const buildMonthlyContext = async (userId, year, month, monthlyIncome = 0) => {
   const userObjId  = new mongoose.Types.ObjectId(userId);
+  const userObj    = await User.findById(userId).lean();
+  const incomeToUse = Number(monthlyIncome) > 0 ? Number(monthlyIncome) : (userObj?.monthlyIncome || 0);
+  const budgetToUse = userObj?.monthlyBudget || 0;
+
   const monthStart = new Date(year, month - 1, 1);
   const monthEnd   = new Date(year, month, 0, 23, 59, 59, 999);
   const lastMonthStart = new Date(year, month - 2, 1);
@@ -95,8 +100,8 @@ const buildMonthlyContext = async (userId, year, month, monthlyIncome = 0) => {
   const daysInMonth      = monthEnd.getDate();
   const avgDailySpend    = Math.round((totalExpenses / daysInMonth) * 100) / 100;
   const lastMonthTotal   = lastMonthAgg[0]?.total || 0;
-  const netSavings       = monthlyIncome > 0 ? monthlyIncome - totalExpenses : 0;
-  const savingsRate      = monthlyIncome > 0 ? Math.max(0, (netSavings / monthlyIncome) * 100) : 0;
+  const netSavings       = incomeToUse > 0 ? incomeToUse - totalExpenses : 0;
+  const savingsRate      = incomeToUse > 0 ? Math.max(0, (netSavings / incomeToUse) * 100) : 0;
 
   // Last month category map for vs-last-month %
   const lastMonthCatMap = lastMonthCatAgg.reduce((acc, c) => { acc[c._id] = c.total; return acc; }, {});
@@ -153,12 +158,15 @@ const buildMonthlyContext = async (userId, year, month, monthlyIncome = 0) => {
   // Monthly amounts array for consistency scoring (just this month's weekly totals)
   const weeklyAmounts = weeklyData.map((w) => w.totalSpent);
 
+  // Target budget for adherence score (use budgetToUse if configured, else 80% of incomeToUse)
+  const targetBudget = budgetToUse > 0 ? budgetToUse : incomeToUse * 0.8;
+
   // Health score components
   const healthComponents = {
     savingsRate:         Math.round(scoreSavingsRate(savingsRate)),
-    budgetAdherence:     Math.round(scoreBudgetAdherence(totalExpenses, monthlyIncome * 0.8)),
+    budgetAdherence:     Math.round(scoreBudgetAdherence(totalExpenses, targetBudget)),
     spendingConsistency: Math.round(scoreSpendingConsistency(weeklyAmounts)),
-    expenseToIncome:     Math.round(scoreExpenseToIncome(totalExpenses, monthlyIncome)),
+    expenseToIncome:     Math.round(scoreExpenseToIncome(totalExpenses, incomeToUse)),
   };
 
   const monthOverMonthChange = lastMonthTotal > 0
@@ -171,7 +179,7 @@ const buildMonthlyContext = async (userId, year, month, monthlyIncome = 0) => {
     totalExpenses,
     transactionCount,
     avgDailySpend,
-    monthlyIncome,
+    monthlyIncome: incomeToUse,
     netSavings:    Math.round(netSavings * 100) / 100,
     savingsRate:   Math.round(savingsRate * 10) / 10,
     highestExpense: highLowAgg[0]?.highest[0] || null,
@@ -203,7 +211,9 @@ const generateReport = async (userId, year, month, monthlyIncome = 0, forceRegen
 
   const reportMonth = `${year}-${String(month).padStart(2, "0")}`;
 
-  if (!forceRegenerate) {
+  if (forceRegenerate) {
+    await MonthlyReport.deleteMany({ user: userId, reportMonth });
+  } else {
     const existing = await MonthlyReport.findOne({ user: userId, reportMonth, status: "success" })
       .sort({ createdAt: -1 })
       .lean();

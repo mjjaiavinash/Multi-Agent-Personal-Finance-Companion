@@ -6,11 +6,17 @@ import ApiError from "../utils/ApiError.js";
  * Throws if email already exists.
  * @returns {{ user: Object, token: string }}
  */
-const register = async ({ name, email, password }) => {
+const register = async ({ name, email, password, monthlyIncome = 0, monthlyBudget = 0 }) => {
   const existing = await User.findOne({ email });
   if (existing) throw ApiError.badRequest("Email is already registered.");
 
-  const user  = await User.create({ name, email, password });
+  const user  = await User.create({
+    name,
+    email,
+    password,
+    monthlyIncome: Number(monthlyIncome) || 0,
+    monthlyBudget: Number(monthlyBudget) || 0,
+  });
   const token = user.generateToken();
 
   return { user: user.toSafeObject(), token };
@@ -48,7 +54,7 @@ const getProfile = async (userId) => {
  * If newPassword is provided, currentPassword must be verified first.
  * @returns {Object} Updated safe user object
  */
-const updateProfile = async (userId, { name, email, currentPassword, newPassword }) => {
+const updateProfile = async (userId, { name, email, currentPassword, newPassword, monthlyIncome, monthlyBudget }) => {
   const user = await User.findById(userId).select("+password");
   if (!user) throw ApiError.notFound("User not found.");
 
@@ -60,6 +66,12 @@ const updateProfile = async (userId, { name, email, currentPassword, newPassword
   }
 
   if (name) user.name = name;
+  if (typeof monthlyIncome !== "undefined" && monthlyIncome !== null) {
+    user.monthlyIncome = Number(monthlyIncome);
+  }
+  if (typeof monthlyBudget !== "undefined" && monthlyBudget !== null) {
+    user.monthlyBudget = Number(monthlyBudget);
+  }
 
   // Password change flow
   if (newPassword) {

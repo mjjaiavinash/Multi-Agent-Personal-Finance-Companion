@@ -6,6 +6,7 @@ import validate       from "../middleware/validate.js";
 import {
   getBudgetPlan,
   invalidateCache,
+  downloadBudgetPlanPDF,
 } from "../controllers/budgetPlannerController.js";
 
 const router = Router();
@@ -30,6 +31,9 @@ router.get(
   validate,
   getBudgetPlan
 );
+
+// GET /api/v1/budget/pdf
+router.get("/pdf", downloadBudgetPlanPDF);
 
 // DELETE /api/v1/budget/cache
 router.delete("/cache", invalidateCache);

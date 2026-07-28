@@ -7,10 +7,10 @@ const safeParse = (raw) => {
 };
 
 const buildFallbackPredictions = (ctx) => {
-  const avgWk = ctx.avgWeeklySpend || 500;
-  const avgMo = ctx.avgMonthlySpend || 2000;
-  const inc   = ctx.monthlyIncome || 3000;
-  const bud   = ctx.monthlyBudget || 2500;
+  const avgWk = ctx.avgWeeklySpend || 0;
+  const avgMo = ctx.avgMonthlySpend || 0;
+  const inc   = ctx.monthlyIncome || 0;
+  const bud   = ctx.monthlyBudget || 0;
 
   const topCat = ctx.categoryData[0]?.category || "General";
   const topCatAmt = Math.round(avgMo * 0.35);

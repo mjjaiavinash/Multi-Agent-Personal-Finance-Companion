@@ -4,6 +4,7 @@ import { analyzeExpenses }    from "../agents/financeAgent.js";
 import { getExpenseSummary }  from "./expenseService.js";
 import { getPatternAnalysis } from "./patternAnalyzerService.js";
 import Expense                from "../models/Expense.js";
+import User                   from "../models/User.js";
 import ApiError               from "../utils/ApiError.js";
 
 // ─── Chat Context Builder ─────────────────────────────────────────────────────
@@ -25,20 +26,22 @@ import ApiError               from "../utils/ApiError.js";
  */
 const buildChatContext = async (userId) => {
   try {
-    const userObjId  = new mongoose.Types.ObjectId(userId);
+    const rawId = userId?._id || userId?.id || userId;
+    const userObjId = mongoose.Types.ObjectId.isValid(rawId)
+      ? new mongoose.Types.ObjectId(String(rawId))
+      : rawId;
     const now        = new Date();
     const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
 
-    // Run summary + supplemental aggregations in parallel
-    const [summary, categoryDetail, recurringExpenses] = await Promise.all([
+    // Run summary + supplemental aggregations + user profile fetch in parallel
+    const [summary, categoryDetail, recurringExpenses, userRecord] = await Promise.all([
 
       // ── 1. Core summary (totals, byCategory, monthly bar chart) ───────────
       getExpenseSummary(userId),
 
       // ── 2. Per-category detail with monthly averages ───────────────────────
-      // Gives the agent enough data to answer affordability and trend questions
       Expense.aggregate([
-        { $match: { user: userObjId, date: { $gte: sixMonthsAgo } } },
+        { $match: { user: { $in: [userObjId, String(rawId)] }, date: { $gte: sixMonthsAgo } } },
         {
           $group: {
             _id:   "$category",
@@ -55,15 +58,14 @@ const buildChatContext = async (userId) => {
             total:      { $round: ["$total", 2] },
             count:      1,
             monthlyAvg: { $round: [{ $divide: ["$total", 6] }, 2] },
-            percentage: 0, // computed below after we know totalSpent
+            percentage: 0,
           },
         },
       ]),
 
-      // ── 3. Recurring expenses (subscription / habit detection) ─────────────
-      // Items appearing 2+ times in 6 months = likely recurring cost
+      // ── 3. Recurring expenses ──────────────────────────────────────────────
       Expense.aggregate([
-        { $match: { user: userObjId, date: { $gte: sixMonthsAgo } } },
+        { $match: { user: { $in: [userObjId, String(rawId)] }, date: { $gte: sixMonthsAgo } } },
         {
           $group: {
             _id:      { $toLower: { $trim: { input: "$title" } } },
@@ -88,10 +90,13 @@ const buildChatContext = async (userId) => {
           },
         },
       ]),
+
+      // ── 4. User profile ───────────────────────────────────────────────────
+      User.findById(userId).select("name monthlyIncome monthlyBudget").lean().catch(() => null),
     ]);
 
-    // Compute category percentages now that we have totalSpent
-    const totalSpent = summary.totalSpent || 0;
+    // Compute category percentages
+    const totalSpent = summary?.totalSpent || 0;
     const topCategories = categoryDetail.map((c) => ({
       ...c,
       percentage: totalSpent > 0
@@ -100,13 +105,27 @@ const buildChatContext = async (userId) => {
     }));
 
     // Merge everything into a single context object for the agent
-    return {
-      ...summary,
+    const ctxResult = {
+      userName:      userRecord?.name || "User",
+      monthlyIncome: userRecord?.monthlyIncome || 0,
+      monthlyBudget: userRecord?.monthlyBudget || 0,
+      ...(summary || {}),
       topCategories,
       recurringExpenses,
     };
-  } catch {
-    // Non-fatal — chat still works without financial context
+
+    console.log("[aiService] Built chat context:", {
+      user: ctxResult.userName,
+      income: ctxResult.monthlyIncome,
+      budget: ctxResult.monthlyBudget,
+      totalSpent: ctxResult.totalSpent,
+      thisMonth: ctxResult.thisMonth,
+      count: ctxResult.count,
+    });
+
+    return ctxResult;
+  } catch (err) {
+    console.error("[aiService] buildChatContext error:", err.message);
     return {};
   }
 };

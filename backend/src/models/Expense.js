@@ -2,11 +2,14 @@ import mongoose from "mongoose";
 
 const CATEGORIES = [
   "Food & Dining",
+  "Transport",
   "Transportation",
   "Shopping",
   "Entertainment",
+  "Healthcare",
   "Health & Fitness",
   "Bills & Utilities",
+  "Housing & EMI",
   "Travel",
   "Education",
   "Personal Care",
@@ -63,94 +66,57 @@ expenseSchema.index({ user: 1, date: -1, category: 1 });
 
 // ─── Static: per-user summary aggregation ────────────────────────────────────
 expenseSchema.statics.getSummary = async function (userId) {
-  const userObjId = new mongoose.Types.ObjectId(userId);
+  const rawId = userId?._id || userId?.id || userId;
+  const userObjId = mongoose.Types.ObjectId.isValid(rawId)
+    ? new mongoose.Types.ObjectId(String(rawId))
+    : rawId;
 
-  const now        = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const now            = new Date();
+  const monthStart     = new Date(now.getFullYear(), now.getMonth(), 1);
   const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const lastMonthEnd   = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
 
-  const [overall, monthly] = await Promise.all([
-    // ── Overall totals + by-category breakdown ──────────────────────────────
-    this.aggregate([
-      { $match: { user: userObjId } },
-      {
-        $facet: {
-          totals: [
-            {
-              $group: {
-                _id:        null,
-                totalSpent: { $sum: "$amount" },
-                count:      { $sum: 1 },
-                avgPerDay:  { $avg: "$amount" },
-              },
-            },
-          ],
-          byCategory: [
-            { $group: { _id: "$category", total: { $sum: "$amount" } } },
-          ],
-          thisMonth: [
-            { $match: { date: { $gte: monthStart } } },
-            { $group: { _id: null, total: { $sum: "$amount" } } },
-          ],
-          lastMonth: [
-            { $match: { date: { $gte: lastMonthStart, $lte: lastMonthEnd } } },
-            { $group: { _id: null, total: { $sum: "$amount" } } },
-          ],
-        },
-      },
-    ]),
+  // Direct find query to guarantee 100% accurate fallback matching across ObjectId & String types
+  const allExpenses = await this.find({
+    user: { $in: [userObjId, String(rawId), String(userObjId)] },
+  }).lean();
 
-    // ── Last 6 months bar chart data ────────────────────────────────────────
-    this.aggregate([
-      {
-        $match: {
-          user: userObjId,
-          date: { $gte: new Date(now.getFullYear(), now.getMonth() - 5, 1) },
-        },
-      },
-      {
-        $group: {
-          _id: {
-            year:  { $year: "$date" },
-            month: { $month: "$date" },
-          },
-          total: { $sum: "$amount" },
-        },
-      },
-      { $sort: { "_id.year": 1, "_id.month": 1 } },
-      {
-        $project: {
-          _id:   0,
-          month: {
-            $dateToString: {
-              format: "%b %Y",
-              date: {
-                $dateFromParts: { year: "$_id.year", month: "$_id.month", day: 1 },
-              },
-            },
-          },
-          total: 1,
-        },
-      },
-    ]),
-  ]);
+  let totalSpent     = 0;
+  let thisMonthTotal = 0;
+  let lastMonthTotal = 0;
+  const byCategory   = {};
+  const monthlyMap   = {};
 
-  const totals     = overall[0]?.totals[0]     || {};
-  const thisMonthTotal = overall[0]?.thisMonth[0]?.total || 0;
-  const lastMonthTotal = overall[0]?.lastMonth[0]?.total || 0;
+  allExpenses.forEach((exp) => {
+    const amt     = Number(exp.amount || 0);
+    const expDate = new Date(exp.date);
+    totalSpent   += amt;
 
-  const byCategory = (overall[0]?.byCategory || []).reduce((acc, item) => {
-    acc[item._id] = item.total;
-    return acc;
-  }, {});
+    if (exp.category) {
+      byCategory[exp.category] = (byCategory[exp.category] || 0) + amt;
+    }
+
+    if (expDate >= monthStart) {
+      thisMonthTotal += amt;
+    } else if (expDate >= lastMonthStart && expDate <= lastMonthEnd) {
+      lastMonthTotal += amt;
+    }
+
+    const monthKey = expDate.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+    monthlyMap[monthKey] = (monthlyMap[monthKey] || 0) + amt;
+  });
+
+  const monthly = Object.entries(monthlyMap).map(([m, total]) => ({
+    month: m,
+    total: Math.round(total * 100) / 100,
+  }));
 
   return {
-    totalSpent:  totals.totalSpent || 0,
-    count:       totals.count      || 0,
-    avgPerDay:   Math.round((totals.avgPerDay || 0) * 100) / 100,
-    thisMonth:   thisMonthTotal,
-    lastMonth:   lastMonthTotal,
+    totalSpent:  Math.round(totalSpent * 100) / 100,
+    count:       allExpenses.length,
+    avgPerDay:   allExpenses.length > 0 ? Math.round((totalSpent / allExpenses.length) * 100) / 100 : 0,
+    thisMonth:   Math.round(thisMonthTotal * 100) / 100,
+    lastMonth:   Math.round(lastMonthTotal * 100) / 100,
     byCategory,
     monthly,
   };

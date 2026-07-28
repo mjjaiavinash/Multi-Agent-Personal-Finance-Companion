@@ -1,12 +1,12 @@
 import mongoose              from "mongoose";
 import Expense               from "../models/Expense.js";
+import User                  from "../models/User.js";
 import { generateBudgetPlan } from "../agents/budgetPlannerAgent.js";
 import ApiError              from "../utils/ApiError.js";
 
 // ─── In-Memory TTL Cache ──────────────────────────────────────────────────────
 // 45-minute TTL — budget plans are stable within a session but should refresh
 // after new expenses are added.
-// Production upgrade path: replace with Redis SET key value EX 2700.
 
 const cache     = new Map();
 const CACHE_TTL = 45 * 60 * 1000; // 45 minutes
@@ -26,20 +26,23 @@ const bustCache  = (key)       => cache.delete(key);
  * Runs 4 parallel aggregation pipelines to build a rich spending context
  * specifically designed for budget planning.
  *
- * Pipeline focus (intentionally different from savings/pattern services):
- *  - Month-over-month category averages (budget baseline)
- *  - Spending volatility per category (budget buffer sizing)
- *  - Recurring fixed costs (non-negotiable budget floor)
- *  - Last-month actuals vs. prior average (trend signal for forecast)
- *
  * @param {string} userId
  * @param {number} months - History window (default 3 for tighter budget accuracy)
  * @returns {Promise<Object>} Structured context for the AI prompt
  */
 const buildBudgetContext = async (userId, months = 3) => {
-  const userObjId  = new mongoose.Types.ObjectId(userId);
+  const rawId = userId?._id || userId?.id || userId;
+  const userObjId = mongoose.Types.ObjectId.isValid(rawId)
+    ? new mongoose.Types.ObjectId(String(rawId))
+    : rawId;
+
   const now        = new Date();
   const rangeStart = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
+
+  // Fetch User record for income & budget targets
+  const userDoc = await User.findById(rawId).lean().catch(() => null);
+  const profileIncome = userDoc?.monthlyIncome || 0;
+  const profileBudget = userDoc?.monthlyBudget || 0;
 
   const [
     totalsResult,
@@ -50,7 +53,7 @@ const buildBudgetContext = async (userId, months = 3) => {
 
     // ── 1. Overall totals for the analysis window ──────────────────────────
     Expense.aggregate([
-      { $match: { user: userObjId, date: { $gte: rangeStart } } },
+      { $match: { user: { $in: [userObjId, String(rawId), String(userObjId)] }, date: { $gte: rangeStart } } },
       {
         $group: {
           _id:        null,
@@ -61,10 +64,9 @@ const buildBudgetContext = async (userId, months = 3) => {
       },
     ]),
 
-    // ── 2. Per-category stats: avg, max, min, stddev proxy (for volatility) ─
-    // stddev proxy = (max - min) / avg — high value = volatile / impulse category
+    // ── 2. Category totals & volatility ───────────────────────────────────
     Expense.aggregate([
-      { $match: { user: userObjId, date: { $gte: rangeStart } } },
+      { $match: { user: { $in: [userObjId, String(rawId), String(userObjId)] }, date: { $gte: rangeStart } } },
       {
         $group: {
           _id:     "$category",
@@ -86,9 +88,7 @@ const buildBudgetContext = async (userId, months = 3) => {
           avg:      { $round: ["$avg", 2] },
           max:      { $round: ["$max", 2] },
           min:      { $round: ["$min", 2] },
-          // Monthly average = total spend / months in window
           monthlyAvg: { $round: [{ $divide: ["$total", months] }, 2] },
-          // Volatility proxy: (max - min) / avg — higher = more unpredictable
           volatility: {
             $cond: [
               { $gt: ["$avg", 0] },
@@ -102,7 +102,7 @@ const buildBudgetContext = async (userId, months = 3) => {
 
     // ── 3. Month-by-month totals (for trend + forecast) ────────────────────
     Expense.aggregate([
-      { $match: { user: userObjId, date: { $gte: rangeStart } } },
+      { $match: { user: { $in: [userObjId, String(rawId), String(userObjId)] }, date: { $gte: rangeStart } } },
       {
         $group: {
           _id: {
@@ -136,10 +136,8 @@ const buildBudgetContext = async (userId, months = 3) => {
     ]),
 
     // ── 4. Recurring / fixed costs (budget floor) ──────────────────────────
-    // Items appearing in at least 2 of the last 3 months = likely fixed cost.
-    // These set the non-negotiable floor for each category budget.
     Expense.aggregate([
-      { $match: { user: userObjId, date: { $gte: rangeStart } } },
+      { $match: { user: { $in: [userObjId, String(rawId), String(userObjId)] }, date: { $gte: rangeStart } } },
       {
         $group: {
           _id:      { $toLower: { $trim: { input: "$title" } } },
@@ -203,12 +201,14 @@ const buildBudgetContext = async (userId, months = 3) => {
       months,
     },
     spendingSummary: {
+      monthlyIncome:    profileIncome > 0 ? profileIncome : (monthlyAvg > 0 ? Math.round(monthlyAvg / 0.75) : 0),
+      monthlyBudget:    profileBudget,
       totalSpent,
       transactionCount: totals.count || 0,
       monthlyAverage:   monthlyAvg,
       largestSingle:    Math.round((totals.maxSingle || 0) * 100) / 100,
       lastMonthSpend:   lastMonthTotal,
-      trendVsPrior:     trendPercent,   // positive = spending more than usual
+      trendVsPrior:     trendPercent,
     },
     categoryBreakdown:    categoriesWithPct,
     monthlyBreakdown,
@@ -231,7 +231,13 @@ const buildBudgetContext = async (userId, months = 3) => {
  * @param {boolean} [forceRefresh=false] - Bypass cache
  * @returns {Promise<Object>} Full budget plan
  */
-const getBudgetPlan = async (userId, months = 3, forceRefresh = false) => {
+const getBudgetPlan = async (userId, months = 3, forceRefresh = false, overrideIncome = 0) => {
+  if (overrideIncome > 0) {
+    const rawId = userId?._id || userId?.id || userId;
+    await User.findByIdAndUpdate(rawId, { monthlyIncome: overrideIncome }).catch(() => {});
+    forceRefresh = true;
+  }
+
   const cacheKey = `budget:${userId}:${months}`;
 
   if (!forceRefresh) {

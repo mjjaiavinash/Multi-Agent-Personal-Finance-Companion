@@ -1,19 +1,20 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, PlusCircle, History, BrainCircuit,
-  MessageSquareText, User, LogOut, Wallet, Target, Activity, FileText, TrendingUp, PiggyBank
+  MessageSquareText, User, LogOut, Wallet, Target, Activity, FileText, TrendingUp, PiggyBank, Tag,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import NotificationBell from "./common/NotificationBell";
 
 const links = [
-  { to: "/dashboard",      label: "Dashboard",       icon: LayoutDashboard },
-  { to: "/add-expense",    label: "Add Expense",     icon: PlusCircle },
-  { to: "/history",        label: "History",         icon: History },
-  { to: "/savings-goals",  label: "Savings Goals",   icon: PiggyBank },
+  { to: "/dashboard",      label: "Dashboard",         icon: LayoutDashboard },
+  { to: "/add-expense",    label: "Add Expense",       icon: PlusCircle },
+  { to: "/history",        label: "History",           icon: History },
+  { to: "/categorizer",    label: "Categorizer Agent", icon: Tag },
+  { to: "/savings-goals",  label: "Savings Goals",     icon: PiggyBank },
   { to: "/monthly-report", label: "Monthly Report",  icon: FileText },
   { to: "/ai-prediction",  label: "AI Predictions",  icon: TrendingUp },
-  { to: "/ai-analysis",    label: "AI Analysis",     icon: BrainCircuit },
+  { to: "/savings-advisor", label: "Savings Advisor Agent", icon: PiggyBank },
   { to: "/budget",         label: "Budget Planner",  icon: Target },
   { to: "/health-score",   label: "Health Score",    icon: Activity },
   { to: "/ai-chat",        label: "AI Chat",         icon: MessageSquareText },

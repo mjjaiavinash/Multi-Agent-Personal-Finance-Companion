@@ -227,8 +227,9 @@ const buildFinancialContext = async (userId, months = 6) => {
  * @param {boolean} [forceRefresh=false] - Bypass cache
  * @returns {Promise<Object>} Full savings advisory result
  */
-const getSavingsAdvice = async (userId, months = 6, forceRefresh = false) => {
-  const cacheKey = `savings:${userId}:${months}`;
+const getSavingsAdvice = async (userId, months = 6, forceRefresh = false, customIncome = 0) => {
+  const userIncome = Number(customIncome) > 0 ? Number(customIncome) : 0;
+  const cacheKey = `savings:${userId}:${months}:${userIncome}`;
 
   if (!forceRefresh) {
     const cached = getCached(cacheKey);
@@ -246,14 +247,55 @@ const getSavingsAdvice = async (userId, months = 6, forceRefresh = false) => {
     );
   }
 
+  context.monthlyIncome = userIncome > 0 ? userIncome : (context.financialSummary.monthlyAverage / 0.75);
+
   const advice = await generateSavingsAdvice(context);
+
+  // Compute precise category overspending alerts based on monthly income
+  const categoryAlerts = [];
+  const incomeVal = context.monthlyIncome;
+
+  const RECOMMENDED_PCT = {
+    "Food & Dining": 0.15,
+    "Entertainment": 0.05,
+    "Transport":     0.10,
+    "Travel":        0.10,
+    "Housing & EMI": 0.25,
+    "Shopping":      0.07,
+    "Bills & Utilities": 0.08,
+  };
+
+  context.categoryBreakdown.forEach((cat) => {
+    const limitPct = RECOMMENDED_PCT[cat.category] || 0.10;
+    const recommendedAmount = Math.round(incomeVal * limitPct);
+    const actualMonthly = cat.monthlyAverage || cat.totalAmount;
+    const actualPct = Math.round((actualMonthly / incomeVal) * 100);
+    const recPctVal = Math.round(limitPct * 100);
+
+    if (actualMonthly > recommendedAmount) {
+      const excess = actualMonthly - recommendedAmount;
+      categoryAlerts.push({
+        category: cat.category,
+        actualMonthly,
+        recommendedAmount,
+        actualPct,
+        recommendedPct: recPctVal,
+        excess,
+        severity: excess > incomeVal * 0.10 ? "high" : "medium",
+        message: `High spend detected in ${cat.category}! You are spending ₹${actualMonthly.toLocaleString("en-IN")}/mo (${actualPct}% of your ₹${incomeVal.toLocaleString("en-IN")} income). Recommended cap is ${recPctVal}% (₹${recommendedAmount.toLocaleString("en-IN")}). Reducing this spend frees up ₹${excess.toLocaleString("en-IN")}/month.`,
+      });
+    }
+  });
 
   const result = {
     ...advice,
+    monthlyIncome: incomeVal,
+    categoryAlerts,
     meta: {
       analysisRange:  context.analysisRange,
       totalExpenses:  context.totalCount,
       monthlyAverage: context.financialSummary.monthlyAverage,
+      monthlyIncome:  incomeVal,
       generatedAt:    new Date().toISOString(),
       fromCache:      false,
     },

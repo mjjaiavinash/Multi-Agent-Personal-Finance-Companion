@@ -26,6 +26,10 @@ router.get(
       .optional()
       .isBoolean()
       .withMessage("refresh must be a boolean."),
+    query("income")
+      .optional()
+      .isNumeric()
+      .withMessage("income must be a valid number."),
   ],
   validate,
   getSavingsAdvice

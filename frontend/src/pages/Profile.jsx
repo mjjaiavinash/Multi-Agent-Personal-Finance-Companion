@@ -10,6 +10,8 @@ export default function Profile() {
   const [form, setForm] = useState({
     name: user?.name || "",
     email: user?.email || "",
+    monthlyIncome: user?.monthlyIncome ?? 0,
+    monthlyBudget: user?.monthlyBudget ?? 0,
     currentPassword: "",
     newPassword: "",
   });
@@ -26,7 +28,12 @@ export default function Profile() {
     setSuccess("");
     setLoading(true);
     try {
-      const payload = { name: form.name, email: form.email };
+      const payload = {
+        name: form.name,
+        email: form.email,
+        monthlyIncome: Number(form.monthlyIncome),
+        monthlyBudget: Number(form.monthlyBudget),
+      };
       if (form.newPassword) {
         payload.currentPassword = form.currentPassword;
         payload.newPassword = form.newPassword;
@@ -91,6 +98,28 @@ export default function Profile() {
             value={form.email}
             onChange={handleChange}
           />
+
+          <div className="border-t border-surface-700 pt-4 mt-1">
+            <p className="text-sm font-medium text-slate-300 mb-3">Financial Settings</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Monthly Income ($)"
+                name="monthlyIncome"
+                type="number"
+                min="0"
+                value={form.monthlyIncome}
+                onChange={handleChange}
+              />
+              <Input
+                label="Monthly Budget ($)"
+                name="monthlyBudget"
+                type="number"
+                min="0"
+                value={form.monthlyBudget}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
 
           <div className="border-t border-surface-700 pt-4 mt-1">
             <p className="text-sm font-medium text-slate-400 mb-3">Change Password (optional)</p>

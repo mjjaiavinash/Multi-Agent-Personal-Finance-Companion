@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Menu, X, Wallet, LogOut, LayoutDashboard, PlusCircle, History, FileText, TrendingUp, PiggyBank, BrainCircuit, MessageSquareText, User } from "lucide-react";
+import { Menu, X, Wallet, LogOut, LayoutDashboard, PlusCircle, History, FileText, TrendingUp, PiggyBank, BrainCircuit, MessageSquareText, User, Tag } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import NotificationBell from "./common/NotificationBell";
 
@@ -8,10 +8,11 @@ const links = [
   { to: "/dashboard",      label: "Dashboard",      icon: LayoutDashboard },
   { to: "/add-expense",    label: "Add Expense",    icon: PlusCircle },
   { to: "/history",        label: "History",        icon: History },
+  { to: "/categorizer",    label: "Categorizer Agent", icon: Tag },
   { to: "/savings-goals",  label: "Savings Goals",  icon: PiggyBank },
   { to: "/monthly-report", label: "Monthly Report", icon: FileText },
   { to: "/ai-prediction",  label: "AI Predictions", icon: TrendingUp },
-  { to: "/ai-analysis",    label: "AI Analysis",    icon: BrainCircuit },
+  { to: "/savings-advisor", label: "Savings Advisor Agent", icon: PiggyBank },
   { to: "/ai-chat",        label: "AI Chat",        icon: MessageSquareText },
   { to: "/profile",        label: "Profile",        icon: User },
 ];

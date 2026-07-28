@@ -1,8 +1,8 @@
 import api from "./axiosInstance";
 
 /** POST /api/v1/monthly-report/generate */
-export const generateMonthlyReport = (year, month, monthlyIncome = 0) =>
-  api.post("/monthly-report/generate", { year, month, monthlyIncome });
+export const generateMonthlyReport = (year, month, monthlyIncome = 0, forceRegenerate = false) =>
+  api.post("/monthly-report/generate", { year, month, monthlyIncome, forceRegenerate });
 
 /** GET /api/v1/monthly-report/:year/:month */
 export const getMonthlyReport = (year, month) =>

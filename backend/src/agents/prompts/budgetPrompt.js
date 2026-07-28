@@ -127,90 +127,16 @@ Return ONLY a valid JSON object — no markdown, no code fences, no text before 
 
 ━━━ BUDGET PLANNING RULES ━━━
 1. Base ALL numbers strictly on the provided spending data. Never fabricate amounts.
-2. Use the 50/30/20 rule as a starting framework: 50% needs, 30% wants, 20% savings — but ADJUST based on actual spending patterns.
-3. categoryBudgets must include EVERY category present in the spending data.
-4. recommendedBudget should be realistic: never more than 30% below currentMonthlyAvg unless the category is clearly discretionary.
-5. savingsGoal.monthlyTarget must be at least 10% of estimated monthly income.
+2. Use 50/30/20 rule: 50% needs, 30% wants, 20% savings.
+3. categoryBudgets must include EVERY category in spending data.
+4. recommendedBudget should be realistic: maximum 30% reduction from currentMonthlyAvg.
+5. savingsGoal.monthlyTarget must be at least 10% of monthly income.
 6. savingsGoal.milestones must include exactly 3 milestones: 3-month, 6-month, and 12-month marks.
 7. budgetInsights must contain 3–5 insights, ranked by impact descending.
-8. nextMonthForecast.projectedSpend must use linear trend from monthlyBreakdown data.
-9. budgetHealthScore: 90–100 = excellent (A), 75–89 = good (B), 60–74 = fair (C), 45–59 = poor (D), 0–44 = critical (F).
-10. If a category has no spending history, set status to "no_data" and set recommendedBudget to a reasonable default.
-11. remainingBuffer should be positive; if negative, flag it in budgetInsights as a critical issue.
-12. "generatedAt" must be: "${new Date().toISOString()}"
-
-━━━ FEW-SHOT EXAMPLES ━━━
-
-Example summary:
-{
-  "monthlyIncome": 4267,
-  "totalBudgeted": 3200,
-  "totalSavingsTarget": 640,
-  "remainingBuffer": 427,
-  "budgetHealthScore": 74,
-  "budgetHealthGrade": "C",
-  "planSummary": "Your budget plan is based on 6 months of spending history averaging $3,200/month. Food & Dining and Shopping are your two largest categories and have been allocated realistic reductions of 15% and 20% respectively. Following this plan would free up $640/month for savings.",
-  "basedOnMonths": 6,
-  "estimationMethod": "Monthly income estimated as monthlyAverage / 0.75 since no income data was provided."
-}
-
-Example categoryBudget item:
-{
-  "category": "Food & Dining",
-  "currentMonthlyAvg": 620,
-  "recommendedBudget": 480,
-  "changeFromCurrent": -140,
-  "changePercent": -22.6,
-  "status": "over_budget",
-  "priority": "high",
-  "rationale": "Food & Dining represents 28% of your total spend, significantly above the recommended 15% for this income level. A $480 budget is achievable by reducing restaurant visits from 4x to 2x per week.",
-  "tips": [
-    "Meal prep 3 days per week to reduce weekday restaurant spending",
-    "Set a $120/week food budget and track it daily in the app"
-  ]
-}
-
-Example savingsGoal:
-{
-  "monthlyTarget": 640,
-  "weeklyTarget": 147.81,
-  "annualTarget": 7680,
-  "savingsRate": 15.0,
-  "frequency": "monthly",
-  "goalName": "Emergency Fund Builder",
-  "goalDescription": "Building a 3-month emergency fund is your most critical financial priority. At $640/month, you will reach a $1,920 safety net in 3 months and a full $7,680 annual savings in 12 months.",
-  "milestones": [
-    { "months": 3,  "amount": 1920,  "label": "1-month emergency fund" },
-    { "months": 6,  "amount": 3840,  "label": "2-month emergency fund" },
-    { "months": 12, "amount": 7680,  "label": "Full 3-month emergency fund" }
-  ],
-  "riskLevel": "high"
-}
-
-Example budgetInsight:
-{
-  "id": "food-overspend-alert",
-  "title": "Food & Dining Consistently Over Budget",
-  "description": "Your Food & Dining spend has exceeded $600 in 4 of the last 6 months. This single category is responsible for 28% of total spending. Reducing it by just $140/month would improve your budget health score by 8 points.",
-  "impact": "high",
-  "category": "Food & Dining",
-  "priority": "high"
-}
-
-Example nextMonthForecast:
-{
-  "projectedSpend": 3380,
-  "projectedSavings": 520,
-  "confidenceLevel": 78,
-  "forecastBasis": "Projection based on 6-month linear trend showing 2.1% monthly spending increase. Peak spending months (Nov-Dec) are excluded from the baseline.",
-  "warningFlags": [
-    {
-      "category": "Shopping",
-      "risk": "Shopping spend increased 34% last month — likely to remain elevated",
-      "severity": "medium"
-    }
-  ]
-}
+8. budgetHealthScore: 90–100 (A), 75–89 (B), 60–74 (C), 45–59 (D), 0–44 (F).
+9. If a category has no spending history, set status to "no_data".
+10. "generatedAt" must be: "${new Date().toISOString()}"
+11. CRITICAL: Always use Indian Rupee (₹) or Rs. for all currency text descriptions. NEVER output USD ($) signs.
 `.trim();
 
 /**

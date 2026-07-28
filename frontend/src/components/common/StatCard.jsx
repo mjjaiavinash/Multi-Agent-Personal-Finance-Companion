@@ -1,3 +1,5 @@
+import React, { isValidElement } from "react";
+
 const colorMap = {
   primary: {
     icon:   "text-primary-400 bg-primary-500/10 border border-primary-500/20",
@@ -26,15 +28,28 @@ const colorMap = {
   },
 };
 
-export default function StatCard({ title, value, subtitle, icon: Icon, trend, color = "primary" }) {
+export default function StatCard({ title, value, subtitle, icon: Icon, trend, color = "primary", action }) {
   const c = colorMap[color] || colorMap.primary;
 
+  const renderIcon = () => {
+    if (!Icon) return null;
+    if (isValidElement(Icon)) return Icon;
+    if (typeof Icon === "function" || (typeof Icon === "object" && Icon !== null)) {
+      const Comp = Icon;
+      return <Comp size={18} />;
+    }
+    return null;
+  };
+
   return (
-    <div className={`glass rounded-2xl p-5 flex flex-col gap-4 hover:shadow-lg ${c.glow} transition-all duration-300 group`}>
+    <div className={`glass rounded-2xl p-5 flex flex-col gap-4 hover:shadow-lg ${c.glow} transition-all duration-300 group relative`}>
       <div className="flex items-start justify-between">
-        <p className="text-sm font-medium text-slate-400">{title}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-medium text-slate-400">{title}</p>
+          {action}
+        </div>
         <div className={`p-2.5 rounded-xl ${c.icon} transition-transform duration-200 group-hover:scale-110`}>
-          <Icon size={18} />
+          {renderIcon()}
         </div>
       </div>
 

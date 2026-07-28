@@ -8,7 +8,14 @@ import { useAuth } from "../context/AuthContext";
 import { registerUser } from "../api/auth";
 
 export default function Register() {
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    monthlyIncome: "",
+    monthlyBudget: "",
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -28,7 +35,13 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      const { data } = await registerUser({ name: form.name, email: form.email, password: form.password });
+      const { data } = await registerUser({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        monthlyIncome: form.monthlyIncome ? Number(form.monthlyIncome) : 0,
+        monthlyBudget: form.monthlyBudget ? Number(form.monthlyBudget) : 0,
+      });
       login(data.data.user, data.data.token);
       navigate("/dashboard");
     } catch (err) {
@@ -68,6 +81,28 @@ export default function Register() {
           onChange={handleChange}
           required
         />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-surface-800/50 border border-surface-700/60">
+          <Input
+            label="Monthly Income (₹) (Optional)"
+            type="number"
+            name="monthlyIncome"
+            placeholder="e.g. 50000"
+            value={form.monthlyIncome}
+            onChange={handleChange}
+            min="0"
+          />
+          <Input
+            label="Monthly Budget (₹) (Optional)"
+            type="number"
+            name="monthlyBudget"
+            placeholder="e.g. 30000"
+            value={form.monthlyBudget}
+            onChange={handleChange}
+            min="0"
+          />
+        </div>
+
         <Input
           label="Password"
           type={showPassword ? "text" : "password"}

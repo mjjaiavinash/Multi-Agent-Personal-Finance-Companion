@@ -46,17 +46,31 @@ export const createGoal = async (userId, data) => {
  * Returns all savings goals for a user.
  */
 export const getGoals = async (userId) => {
-  const goals = await SavingsGoal.find({ user: userId })
-    .sort({ createdAt: -1 });
+  const rawId = userId?._id || userId?.id || userId;
+  const userObjId = mongoose.Types.ObjectId.isValid(rawId)
+    ? new mongoose.Types.ObjectId(String(rawId))
+    : rawId;
 
-  return goals.map((g) => g.toObject());
+  const goals = await SavingsGoal.find({
+    user: { $in: [userObjId, String(rawId), String(userObjId)] },
+  }).sort({ createdAt: -1 });
+
+  return goals.map((g) => g.toObject({ virtuals: true }));
 };
 
 /**
  * Updates an existing goal.
  */
 export const updateGoal = async (userId, goalId, updateData) => {
-  const goal = await SavingsGoal.findOne({ _id: goalId, user: userId });
+  const rawId = userId?._id || userId?.id || userId;
+  const userObjId = mongoose.Types.ObjectId.isValid(rawId)
+    ? new mongoose.Types.ObjectId(String(rawId))
+    : rawId;
+
+  const goal = await SavingsGoal.findOne({
+    _id: goalId,
+    user: { $in: [userObjId, String(rawId), String(userObjId)] },
+  });
   if (!goal) throw ApiError.notFound("Savings goal not found.");
 
   if (updateData.title) goal.title = updateData.title;
@@ -81,7 +95,7 @@ export const updateGoal = async (userId, goalId, updateData) => {
   }
 
   await goal.save();
-  return goal.toObject();
+  return goal.toObject({ virtuals: true });
 };
 
 /**
@@ -93,7 +107,15 @@ export const addFunds = async (userId, goalId, amount) => {
     throw ApiError.badRequest("Amount must be a positive number.");
   }
 
-  const goal = await SavingsGoal.findOne({ _id: goalId, user: userId });
+  const rawId = userId?._id || userId?.id || userId;
+  const userObjId = mongoose.Types.ObjectId.isValid(rawId)
+    ? new mongoose.Types.ObjectId(String(rawId))
+    : rawId;
+
+  const goal = await SavingsGoal.findOne({
+    _id: goalId,
+    user: { $in: [userObjId, String(rawId), String(userObjId)] },
+  });
   if (!goal) throw ApiError.notFound("Savings goal not found.");
 
   const wasCompleted = goal.status === "completed";
@@ -113,16 +135,24 @@ export const addFunds = async (userId, goalId, amount) => {
   }
 
   await goal.save();
-  return goal.toObject();
+  return goal.toObject({ virtuals: true });
 };
 
 /**
  * Deletes a goal.
  */
 export const deleteGoal = async (userId, goalId) => {
-  const goal = await SavingsGoal.findOneAndDelete({ _id: goalId, user: userId });
+  const rawId = userId?._id || userId?.id || userId;
+  const userObjId = mongoose.Types.ObjectId.isValid(rawId)
+    ? new mongoose.Types.ObjectId(String(rawId))
+    : rawId;
+
+  const goal = await SavingsGoal.findOneAndDelete({
+    _id: goalId,
+    user: { $in: [userObjId, String(rawId), String(userObjId)] },
+  });
   if (!goal) throw ApiError.notFound("Savings goal not found.");
-  return { id: goalId };
+  return { message: "Savings goal deleted successfully." };
 };
 
 /**
@@ -150,8 +180,8 @@ export const generateGoalAISuggestions = async (userId, goalId) => {
   ]);
 
   const userContext = {
-    monthlyIncome: user?.monthlyIncome || 3000,
-    avgMonthlySpend: totalsAgg[0]?.totalSpent ? Math.round(totalsAgg[0].totalSpent / 3) : 2000,
+    monthlyIncome: user?.monthlyIncome || 0,
+    avgMonthlySpend: totalsAgg[0]?.totalSpent ? Math.round(totalsAgg[0].totalSpent / 3) : 0,
     topCategories: topCatAgg.map(c => ({ category: c._id, total: c.total }))
   };
 

@@ -10,25 +10,29 @@
  */
 
 export const AGENT_CATEGORIES = [
-  "Food",
+  "Food & Dining",
   "Shopping",
   "Transport",
-  "Medical",
-  "Bills",
+  "Bills & Utilities",
   "Entertainment",
   "Education",
+  "Healthcare",
+  "Housing & EMI",
+  "Travel",
   "Other",
 ];
 
 const CATEGORY_DEFINITIONS = `
-- Food        : Restaurants, cafes, groceries, food delivery, beverages, snacks
-- Shopping    : Clothing, electronics, household items, online shopping, gifts
-- Transport   : Fuel, taxi, ride-share, bus, train, flight, parking, vehicle maintenance
-- Medical     : Doctor visits, pharmacy, hospital, health insurance, dental, vision
-- Bills       : Electricity, water, internet, phone, rent, mortgage, subscriptions
-- Entertainment: Movies, concerts, games, streaming services, sports, hobbies
-- Education   : Tuition, books, courses, workshops, stationery, school supplies
-- Other       : Anything that does not clearly fit the above categories
+- Food & Dining     : Restaurants, cafes, groceries, food delivery, lunch, dinner, snacks, coffee, Swiggy, Zomato
+- Shopping          : Clothing, electronics, household items, online shopping, Amazon, Flipkart, apparel
+- Transport         : Fuel, petrol, taxi, Uber, Ola, bus, train, flight, parking, commuting
+- Healthcare        : Doctor visits, pharmacy, medicines, hospital, health insurance, dental, medical
+- Bills & Utilities : Electricity, water, internet, phone, broadband, recharges, utility bills
+- Entertainment     : Movies, Netflix, concerts, games, streaming services, sports, leisure, outings
+- Education         : Tuition, books, courses, workshops, notebooks, school supplies, learning
+- Housing & EMI     : Rent, home loan EMI, maintenance, housing, apartment bills
+- Travel            : Vacation, hotel bookings, weekend trips, tours, flights
+- Other             : Anything that does not clearly fit the above categories
 `.trim();
 
 const FEW_SHOT_EXAMPLES = `
@@ -42,67 +46,35 @@ Input: { "title": "Netflix subscription", "amount": 15.99, "notes": "monthly" }
 Output: { "category": "Bills", "confidence": 0.95, "reasoning": "Recurring streaming subscription treated as a bill." }
 
 Input: { "title": "Paracetamol and vitamins", "amount": 8.40, "notes": "pharmacy" }
-Output: { "category": "Medical", "confidence": 0.97, "reasoning": "Pharmacy purchase of medicine and supplements." }
+Output: { "category": "Healthcare", "confidence": 0.97, "reasoning": "Pharmacy purchase of medicine and supplements." }
 
 Input: { "title": "Random stuff", "amount": 5.00, "notes": "" }
 Output: { "category": "Other", "confidence": 0.55, "reasoning": "Insufficient information to determine a specific category." }
 `.trim();
 
-/**
- * Builds the categorization prompt for a single expense item.
- *
- * @param {{ title: string, amount: number, notes?: string }} expense
- * @returns {string}
- */
 export const buildCategorizerPrompt = (expense) => `
-You are an expert expense categorization AI. Your only job is to classify a given expense into exactly one category.
+Classify this expense into ONE category: ${AGENT_CATEGORIES.join(", ")}.
+Expense: Title="${expense.title}", Amount=${expense.amount || 0}
+Categories:
+- Food & Dining: Food, dining, lunch, dinner, cafe, coffee, groceries, Swiggy, Zomato
+- Transport: Fuel, petrol, Uber, Ola, cab, flight, train, bus, transport
+- Bills & Utilities: Wifi, broadband, electricity, mobile, bills
+- Entertainment: Movies, Netflix, games, tickets, show
+- Education: Books, courses, tuition, notebooks, school
+- Healthcare: Medicines, doctor, pharmacy, medical, health
+- Housing & EMI: Rent, EMI, home loan, maintenance
+- Shopping: Apparel, clothes, shoes, Amazon, Flipkart, shopping
+- Travel: Hotel, trip, vacation
+- Other: Anything else
 
-AVAILABLE CATEGORIES AND THEIR DEFINITIONS:
-${CATEGORY_DEFINITIONS}
-
-RULES:
-1. Return ONLY a valid JSON object — no markdown, no explanation, no code fences.
-2. "category" must be exactly one of: ${AGENT_CATEGORIES.map((c) => `"${c}"`).join(", ")}.
-3. "confidence" must be a float between 0.00 and 1.00 representing your certainty.
-4. "reasoning" must be a single concise sentence explaining your choice.
-5. If the title is vague or ambiguous, use "Other" with a low confidence score.
-6. Never invent a category outside the provided list.
-
-EXAMPLES:
-${FEW_SHOT_EXAMPLES}
-
-NOW CLASSIFY THIS EXPENSE:
-${JSON.stringify({ title: expense.title, amount: expense.amount, notes: expense.notes || "" })}
-
-Return ONLY this JSON structure:
-{ "category": "<category>", "confidence": <0.00-1.00>, "reasoning": "<one sentence>" }
+Return ONLY raw JSON:
+{"category": "<category>", "confidence": 0.95, "reasoning": "<one sentence>"}
 `.trim();
 
-/**
- * Builds a batch categorization prompt for multiple expenses in one Gemini call.
- * More token-efficient than calling the single prompt N times.
- *
- * @param {Array<{ id: string, title: string, amount: number, notes?: string }>} expenses
- * @returns {string}
- */
 export const buildBatchCategorizerPrompt = (expenses) => `
-You are an expert expense categorization AI. Classify each expense in the array below.
+Classify each expense in JSON array into ONE of: ${AGENT_CATEGORIES.join(", ")}.
+Inputs: ${JSON.stringify(expenses.map(e => ({ id: e.id, title: e.title, amount: e.amount })))}
 
-AVAILABLE CATEGORIES AND THEIR DEFINITIONS:
-${CATEGORY_DEFINITIONS}
-
-RULES:
-1. Return ONLY a valid JSON array — no markdown, no explanation, no code fences.
-2. The array must have exactly ${expenses.length} objects, one per input expense, in the same order.
-3. Each object must include the original "id" field unchanged.
-4. "category" must be exactly one of: ${AGENT_CATEGORIES.map((c) => `"${c}"`).join(", ")}.
-5. "confidence" must be a float between 0.00 and 1.00.
-6. "reasoning" must be a single concise sentence.
-7. Use "Other" for vague or unrecognizable expenses.
-
-INPUT EXPENSES:
-${JSON.stringify(expenses.map((e) => ({ id: e.id, title: e.title, amount: e.amount, notes: e.notes || "" })), null, 2)}
-
-Return ONLY this JSON array structure:
-[{ "id": "<original_id>", "category": "<category>", "confidence": <0.00-1.00>, "reasoning": "<one sentence>" }, ...]
+Return ONLY JSON array of objects:
+[{"id": "<id>", "category": "<category>", "confidence": 0.95, "reasoning": "<sentence>"}]
 `.trim();

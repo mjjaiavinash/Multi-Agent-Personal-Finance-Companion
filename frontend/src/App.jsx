@@ -17,6 +17,8 @@ import HealthScore    from "./pages/HealthScore";
 import MonthlyReport  from "./pages/MonthlyReport";
 import AIPrediction   from "./pages/AIPrediction";
 import SavingsGoals   from "./pages/SavingsGoals";
+import CategorizerPage from "./pages/CategorizerPage";
+import SavingsAdvisorPage from "./pages/SavingsAdvisorPage";
 
 export default function App() {
   return (
@@ -39,10 +41,12 @@ export default function App() {
             <Route path="/dashboard"      element={<Dashboard />} />
             <Route path="/add-expense"    element={<AddExpense />} />
             <Route path="/history"        element={<ExpenseHistory />} />
+            <Route path="/categorizer"    element={<CategorizerPage />} />
             <Route path="/savings-goals"  element={<SavingsGoals />} />
+            <Route path="/savings-advisor" element={<SavingsAdvisorPage />} />
             <Route path="/monthly-report" element={<MonthlyReport />} />
             <Route path="/ai-prediction"  element={<AIPrediction />} />
-            <Route path="/ai-analysis"    element={<AIAnalysis />} />
+            <Route path="/ai-analysis"    element={<SavingsAdvisorPage />} />
             <Route path="/ai-chat"        element={<AIFinanceChat />} />
             <Route path="/budget"         element={<BudgetPlanner />} />
             <Route path="/health-score"   element={<HealthScore />} />

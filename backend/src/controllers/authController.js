@@ -5,8 +5,8 @@ import * as authService from "../services/authService.js";
 
 // POST /api/v1/auth/register
 const register = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
-  const result = await authService.register({ name, email, password });
+  const { name, email, password, monthlyIncome, monthlyBudget } = req.body;
+  const result = await authService.register({ name, email, password, monthlyIncome, monthlyBudget });
   ApiResponse.created(res, result, "Account created successfully.");
 });
 
@@ -26,18 +26,20 @@ const logout = asyncHandler(async (req, res) => {
 
 // GET /api/v1/auth/profile  [protected]
 const getProfile = asyncHandler(async (req, res) => {
-  const user = await authService.getProfile(req.user.id);
+  const user = await authService.getProfile(req.user._id || req.user.id);
   ApiResponse.ok(res, { user });
 });
 
 // PUT /api/v1/auth/profile  [protected]
 const updateProfile = asyncHandler(async (req, res) => {
-  const { name, email, currentPassword, newPassword } = req.body;
-  const user = await authService.updateProfile(req.user.id, {
+  const { name, email, currentPassword, newPassword, monthlyIncome, monthlyBudget } = req.body;
+  const user = await authService.updateProfile(req.user._id || req.user.id, {
     name,
     email,
     currentPassword,
     newPassword,
+    monthlyIncome,
+    monthlyBudget,
   });
   ApiResponse.ok(res, { user }, "Profile updated successfully.");
 });

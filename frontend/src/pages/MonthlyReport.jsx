@@ -72,8 +72,8 @@ export default function MonthlyReport() {
     try {
       const incomeVal = Number(incomeInput) || 0;
 
-      // Always POST generate — backend overwrites the existing record
-      const res = await generateMonthlyReport(selectedYear, selectedMonth, incomeVal);
+      // Always POST generate — pass forceRegen so backend overwrites when requested
+      const res = await generateMonthlyReport(selectedYear, selectedMonth, incomeVal, forceRegen);
       const report = res.data?.data?.report || res.data?.report || null;
       setReport(report);
       fetchHistory();

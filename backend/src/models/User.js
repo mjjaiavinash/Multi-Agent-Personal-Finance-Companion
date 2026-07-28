@@ -28,12 +28,12 @@ const userSchema = new mongoose.Schema(
     },
     monthlyIncome: {
       type:    Number,
-      default: 3000,
+      default: 0,
       min:     [0, "Monthly income cannot be negative."],
     },
     monthlyBudget: {
       type:    Number,
-      default: 2400,
+      default: 0,
       min:     [0, "Monthly budget cannot be negative."],
     },
   },
@@ -69,6 +69,7 @@ userSchema.methods.generateToken = function () {
 userSchema.methods.toSafeObject = function () {
   return {
     _id:           this._id,
+    id:            this._id,
     name:          this.name,
     email:         this.email,
     monthlyIncome: this.monthlyIncome,
