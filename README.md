@@ -1,14 +1,15 @@
 <div align="center">
 
-# SpendSense AI
+# 💸 SpendSense AI
 
-### _An Autonomous Multi-Agent AI System for Intelligent Personal Finance Operations_
+### *An Autonomous Multi-Agent AI System for Intelligent Personal Finance Operations*
 
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
+[![Express](https://img.shields.io/badge/Express-5.x-000000?style=flat-square&logo=express&logoColor=white)](https://expressjs.com)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat-square&logo=mongodb&logoColor=white)](https://www.mongodb.com)
-[![Groq AI](https://img.shields.io/badge/Groq-AI%20Engine-F55036?style=flat-square&logo=lightning&logoColor=white)](https://groq.com)
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat-square&logo=mongodb&logoColor=white)](https://www.mongodb.com)
+[![Groq AI](https://img.shields.io/badge/Groq-Llama%203.3%2070B-F55036?style=flat-square&logo=lightning&logoColor=white)](https://groq.com)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
@@ -16,350 +17,343 @@
 
 ---
 
-**SpendSense AI** is an autonomous, self-learning, multi-agent AI-powered Personal Finance Command Center. It connects financial accounts, expense history, budget allocations, savings goals, recurring subscriptions, and risk factors to deliver real-time monitoring, spending anomaly detection, predictive risk analysis, root-cause investigation, what-if budget simulations, and autonomous/human-in-the-loop financial decision support.
+**SpendSense AI** is an autonomous, self-learning, multi-agent AI-powered Personal Finance Command Center. Powered by **Groq AI (Llama 3.3 70B)**, it connects financial accounts, expense histories, budget allocations, savings goals, and risk factors to deliver real-time monitoring, anomaly detection, predictive risk analysis, income overspending alerts, budget simulations with 100% allocation PDF exports, and autonomous financial decision support.
 
 ---
 
-## Table of Contents
+## 📋 Table of Contents
 
+- [Key Highlights & New Features](#key-highlights--new-features)
 - [Project Overview](#project-overview)
 - [Features](#features)
-- [AI Agents](#ai-agents)
-- [Architecture](#architecture)
+- [Multi-Agent AI Pipeline](#multi-agent-ai-pipeline)
+- [System Architecture](#system-architecture)
 - [Folder Structure](#folder-structure)
-- [Installation](#installation)
+- [Installation & Setup](#installation--setup)
 - [Environment Variables](#environment-variables)
 - [Tech Stack](#tech-stack)
 - [API Endpoints](#api-endpoints)
-- [Screenshots](#screenshots)
+- [PDF Report Generation](#pdf-report-generation)
 - [Deployment](#deployment)
 - [Future Scope](#future-scope)
-- [Hackathon Details](#hackathon-details)
-- [Contributors](#contributors)
 - [License](#license)
 
 ---
 
-## Project Overview
+## 🌟 Key Highlights & New Features
 
-**SpendSense AI** is a full-stack, production-grade **AI-powered personal finance management application** that leverages a multi-agent orchestration pipeline built on **Groq AI (Llama 3.3 70B)** to deliver real-time expense analysis, smart budget planning, predictive forecasting, and personalized financial coaching — all within a dark-themed, glassmorphic dashboard.
+- 🤖 **10 Specialized AI Agents**: Autonomous multi-agent pipeline orchestrated for categorization, pattern analysis, savings optimization, budget planning, health scoring, monthly auditing, prediction forecasting, goal acceleration, and context-aware chat.
+- 🚨 **Income Overspending Alerts**: Real-time monitoring by the Savings Advisor Agent that triggers instant high-priority alerts when monthly expenditure exceeds calculated user income.
+- 📑 **100% Allocation PDF Export**: Budget Planner constructs full envelope allocations and exports official, formatted PDF budget plans.
+- 📊 **Interactive Analytics Suite**: Powered by Recharts featuring category pie charts, weekly/monthly spending bar charts, net savings line charts, and predictive expense forecast area charts.
+- 📄 **Monthly PDF Financial Audits**: Automated end-of-month financial health audit with historical comparisons, category break-downs, and downloadable PDF reports.
+- 🔔 **Smart Event-Driven Notifications**: In-app toast popups, unread badge counters, and real-time alerts for budget thresholds (80%/100%), large transactions, duplicates, and goal milestones.
 
-> Unlike traditional expense trackers, SpendSense AI **thinks like a financial advisor** — analyzing your spending patterns, predicting your future expenses, generating health scores, and proactively alerting you through a smart notification system.
+---
+
+## 🎯 Project Overview
+
+**SpendSense AI** bridges the gap between static transaction tracking and active wealth management. Unlike traditional expense trackers that only report past transactions, SpendSense AI acts as an autonomous **AI Financial Advisor** — continuously evaluating spending velocity, identifying financial leaks, predicting future risk areas, and delivering human-in-the-loop recommendations.
 
 ### Core Pillars
 
 | Pillar | Description |
 |---|---|
-| **AI Intelligence** | Multi-agent pipeline with 7 specialized Groq-powered agents |
-| **Visual Analytics** | Interactive Recharts suite: Pie, Bar, Line, Area charts |
-| **Smart Alerts** | Real-time event-driven notification system with toast popups |
-| **Goal Tracking** | Savings goals with AI acceleration suggestions |
-| **Predictions** | ML-backed weekly & monthly spending forecasts |
-| **Monthly Reports** | Comprehensive AI-generated PDF financial audits |
+| **Multi-Agent AI** | 10 specialized Groq Llama 3.3 70B agents working sequentially & asynchronously |
+| **Predictive Analytics** | Machine learning and LLM hybrid weekly/monthly expense forecasting with confidence metrics |
+| **Smart Budgeting** | 50/30/20 and custom budget rule generation with 100% envelope allocation & PDF exports |
+| **Overspending Guard** | Real-time expense monitoring with immediate notifications on income deficit or budget excess |
+| **Goal Acceleration** | AI-driven deposit suggestions and milestone tracking to reach savings goals faster |
+| **Financial Wellness** | 4-pillar composite health score (0-100) with grade distribution and historical trends |
 
 ---
 
-## Features
+## ⚡ Features
 
-### Dashboard
-- Personalized greeting with real-time financial snapshot
-- 4 KPI stat cards (Balance, Total Expenses, This Month, Savings)
-- Budget progress ring with color-coded threshold indicators
-- Health Score card with letter grade and breakdown
-- **Interactive Analytics Suite** — 4 Recharts visualizations in a 2×2 responsive grid
-  - **Pie Chart** — Category spending breakdown with hover expansion
-  - **Bar Chart** — Switchable Weekly / Monthly spending dynamics
-  - **Line Chart** — Savings velocity trend (Income vs Spent vs Net Savings)
-  - **Area Chart** — AI prediction forecast (Historical -> Projected)
+### 1. Dashboard Command Center
+- **Greeting & Overview**: Real-time snapshot of user total balance, monthly income, total spent, and net savings.
+- **KPI Stat Cards**: Animated metric cards with monthly trend indicators.
+- **Health Score Ring**: Radial progress gauge showing current health score and letter grade (A+ to F).
+- **Interactive Analytics Grid (2x2)**:
+  - **Category Pie Chart**: Interactive breakdown of expenses by category with hover tooltips.
+  - **Spending Bar Chart**: Toggleable weekly and monthly spending dynamics.
+  - **Savings Velocity Line Chart**: Income vs. Expense vs. Net Savings trends over time.
+  - **Prediction Area Chart**: Historical spending seamlessly transitioning into AI-projected expense curves.
 
-### Expense Management
-- Add expenses with auto-categorization via AI
-- Full expense history with pagination, filters, search, and sort
-- Duplicate detection & large expense alerts
+### 2. Multi-Agent AI Analysis (`/categorizer`, `/savings-advisor`, `/ai-analysis`)
+- **Expense Categorizer Agent**: Auto-classifies raw transaction text/receipts into standardized categories with confidence scores and reasoning tags.
+- **Pattern Analyzer Agent**: Scans transaction logs to pinpoint hidden recurring subscriptions, spending spikes, and velocity anomalies.
+- **Savings Advisor Agent**: Computes actionable cost-cutting strategies, flags high-leak categories, and issues **Income Overspending Alerts**.
 
-### AI Financial Analysis
-- Multi-agent orchestrator pipeline with **animated agent progress loader**
-  - Expense Categorizer -> Pattern Analyzer -> Savings Advisor -> Budget Planner -> Finance Assistant
-- Executive summary, category breakdowns, savings suggestions, and budget plan
-- 3 / 6 / 12 month analysis range selection
+### 3. Smart Budget Planner & PDF Export (`/budget`)
+- **AI 50/30/20 Allocation**: Automatically splits monthly income into Needs (50%), Wants (30%), and Savings (20%).
+- **100% Envelope Allocation**: Guarantees every dollar/rupee of income is accounted for without unallocated gaps.
+- **Category Budget Caps**: Real-time tracking of spend-to-cap percentages with warning states at 80% and 100%.
+- **PDF Export**: Generates professional, branded PDF documents of the complete budget plan with category breakdown tables.
 
-### AI Finance Chat
-- Real-time conversational financial advisor powered by Groq
-- Context-aware responses based on your actual expense history
-- Persistent chat history with multi-turn support
+### 4. AI Spending Predictions (`/ai-prediction`)
+- **Forecast Engine**: Projects upcoming weekly and monthly expenses using recent spending rate and seasonal trends.
+- **Confidence Metrics**: Provides probability score for forecast accuracy.
+- **Risk Identification**: Predicts top 3 categories prone to overspending in the upcoming period.
 
-### AI Spending Predictions
-- Weekly & monthly expense forecasts with confidence scores
-- Highest spending category predictions
-- Budget adherence & savings forecasts
-- Interactive prediction graph
+### 5. Financial Health Score (`/health-score`)
+- **Composite Score (0-100)**: Evaluated across 4 key pillars:
+  1. *Savings Rate Pillar*
+  2. *Budget Adherence Pillar*
+  3. *Spending Consistency Pillar*
+  4. *Expense Diversity Pillar*
+- **Grade Rating**: Assigns A+, A, B, C, D, or F with detailed breakdown notes and historical score charts.
 
-### Budget Planner
-- AI-generated 50/30/20 budget recommendations
-- Per-category budget cap management
-- Real-time budget utilization tracking
+### 6. Savings Goals & AI Acceleration (`/savings-goals`)
+- **Goal Creation**: Set target amounts, deadlines, and categories (e.g., Emergency Fund, Vacation, Car).
+- **Progress Tracking**: Circular progress metrics, current savings, and deposit history.
+- **AI Acceleration Suggestions**: Groq-powered advice on micro-saving tweaks to achieve targets early.
 
-### Financial Health Score
-- Composite score (0-100) with letter grade (A+ to F)
-- 4 pillar breakdown: Savings Rate, Budget Adherence, Spending Consistency, Expense Diversity
-- Historical health score trend
+### 7. Monthly Financial Report & Audit (`/monthly-report`)
+- **Automated Monthly Audits**: Deep-dive monthly review analyzing total inflow/outflow, savings rate, and category shifts.
+- **Month-over-Month Comparison**: Calculates percentage change compared to the previous month.
+- **PDF Download**: One-click export to download official monthly financial audits.
 
-### Savings Goal Tracker
-- Create goals with target amount, deadline, and current savings
-- Progress bar, circular progress ring, and celebration animations
-- AI-generated acceleration suggestions (powered by Groq)
-- Deposit functionality to track contributions
+### 8. AI Finance Chat (`/ai-chat`)
+- **Conversational Assistant**: Multi-turn chat interface powered by Groq Llama 3.3 70B.
+- **Full Context Integration**: Ingests user-specific financial context (recent expenses, budget limits, savings goals) to answer questions directly.
 
-### Monthly Financial Report
-- Full AI-generated monthly financial audit
-- Health score, category breakdown, weekly analysis, net savings, budget performance
-- Comparison to previous month
-- Actionable recommendations and financial tips
-- PDF download support
-- Historical report access (last 24 months)
-
-### Smart Notification System
-- Automatic event-driven alerts for:
-  - Budget 80% / exceeded
-  - Large expense added (>= Rs. 5,000)
-  - Duplicate expense detected
-  - Savings goal achieved
-  - Monthly report ready
-  - AI predictions refreshed
-- Bell icon with animated unread badge (Sidebar & Navbar)
-- Slide-in toast popups with auto-dismiss (5s)
-- Dashboard notification feed widget
-- Mark individual / all as read
+### 9. Smart Notification System
+- **Real-Time Event Triggers**:
+  - Budget cap reached 80% or 100%
+  - Income overspending alert
+  - High-value expense added (>= ₹5,000 / $100)
+  - Duplicate transaction detected
+  - Savings goal milestone reached
+- **UI Elements**: Animated bell counter badge, slide-in toast notifications, and interactive notification drawer.
 
 ---
 
-## AI Agents
+## 🧠 Multi-Agent AI Pipeline
 
-SpendSense AI is powered by a **7-agent Groq AI orchestration pipeline**, each specializing in a distinct financial intelligence task:
+SpendSense AI utilizes a **10-Agent Pipeline** built on the Groq AI SDK (`llama-3.3-70b-versatile`):
 
-| Agent | Model | Responsibility |
+```
+                                  ┌────────────────────────┐
+                                  │   Orchestrator Agent   │
+                                  └───────────┬────────────┘
+                                              │
+         ┌───────────────────┬────────────────┼───────────────────┬──────────────────┐
+         ▼                   ▼                ▼                   ▼                  ▼
+┌─────────────────┐ ┌────────────────┐ ┌─────────────┐ ┌────────────────────┐ ┌─────────────┐
+│Categorizer Agent│ │Pattern Analyzer│ │Savings Agent│ │Budget Planner Agent│ │Health Agent │
+└─────────────────┘ └────────────────┘ └─────────────┘ └────────────────────┘ └─────────────┘
+         │                   │                │                   │                  │
+         ▼                   ▼                ▼                   ▼                  ▼
+┌─────────────────┐ ┌────────────────┐ ┌─────────────┐ ┌────────────────────┐ ┌─────────────┐
+│  Prediction Agt │ │Monthly Aud. Agt│ │Chat Assistant│ │Goal Accelerator Agt│ │Finance Agent│
+└─────────────────┘ └────────────────┘ └─────────────┘ └────────────────────┘ └─────────────┘
+```
+
+| Agent Name | Primary Model | Function & Outputs |
 |---|---|---|
-| **Categorizer Agent** | Llama 3.3 70B | Auto-classifies transactions into standardized spending categories |
-| **Pattern Analyzer Agent** | Llama 3.3 70B | Identifies recurring trends, anomalies, and spending velocity |
-| **Savings Advisor Agent** | Llama 3.3 70B | Formulates personalized cost-reduction and wealth-building strategies |
-| **Budget Planner Agent** | Llama 3.3 70B | Constructs optimal 50/30/20 budget allocations and category caps |
-| **Health Score Agent** | Llama 3.3 70B | Calculates composite financial wellness score across 4 pillars |
-| **Monthly Report Agent** | Llama 3.3 70B | Generates comprehensive monthly financial audit with insights |
-| **Prediction Agent** | Llama 3.3 70B | Forecasts next week / next month expenses with confidence scoring |
-| **Chat Agent** | Llama 3.3 70B | Context-aware conversational financial advisor |
-| **Savings Goal Agent** | Llama 3.3 70B | AI acceleration suggestions to reach savings goals faster |
-| **Orchestrator Agent** | Llama 3.3 70B | Coordinates multi-agent pipeline and synthesizes executive summary |
+| **Orchestrator Agent** | Llama 3.3 70B | Coordinates multi-agent workflows, synthesizes cross-agent findings, and outputs executive summaries. |
+| **Categorizer Agent** | Llama 3.3 70B | Maps transactions to standard categories (Food, Housing, Utilities, Transportation, Entertainment, etc.) with reasoning. |
+| **Pattern Analyzer Agent** | Llama 3.3 70B | Detects velocity changes, weekend spending spikes, recurring subscriptions, and abnormal expense surges. |
+| **Savings Advisor Agent** | Llama 3.3 70B | Analyzes discretionary spend, generates customized savings plans, and issues **Income Overspending Alerts**. |
+| **Budget Planner Agent** | Llama 3.3 70B | Formulates 50/30/20 envelope plans, sets category budget caps, and formats data for PDF export. |
+| **Health Score Agent** | Llama 3.3 70B | Evaluates 4 pillars of financial health and assigns a score (0-100) and grade (A+ to F). |
+| **Monthly Report Agent** | Llama 3.3 70B | Generates end-of-month executive financial audit reports with period-over-period delta analysis. |
+| **Prediction Agent** | Llama 3.3 70B | Computes forward-looking weekly & monthly expense forecasts with confidence levels. |
+| **Savings Goal Agent** | Llama 3.3 70B | Formulates personalized strategies and micro-saving advice to accelerate goal achievement. |
+| **Chat Agent** | Llama 3.3 70B | Context-aware, conversational AI advisor for user queries regarding their real-time financial status. |
 
 ---
 
-## Architecture
+## 🏗️ System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        CLIENT (React + Vite)                    │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌───────────────┐  │
-│  │Dashboard │  │AI Analysis│  │Predictions│  │Savings Goals │  │
-│  │ Recharts │  │Pipeline  │  │Area Chart │  │Progress Ring  │  │
-│  └──────────┘  └──────────┘  └──────────┘  └───────────────┘  │
-│        │               │             │                │         │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Axios API Layer + Auth Context              │   │
-│  └─────────────────────────────────────────────────────────┘   │
-└───────────────────────────────┬─────────────────────────────────┘
-                                │ HTTPS REST API
-┌───────────────────────────────▼─────────────────────────────────┐
-│                     EXPRESS.JS BACKEND (Node.js)                │
-│                                                                 │
-│  ┌──────────────┐   ┌─────────────┐   ┌──────────────────────┐ │
-│  │ Auth Routes  │   │Expense Routes│   │   AI Agent Routes    │ │
-│  │ JWT + bcrypt │   │CRUD + Filter│   │ /ai, /analysis, etc. │ │
-│  └──────────────┘   └─────────────┘   └──────────────────────┘ │
-│                                                                 │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │                  SERVICE LAYER                           │  │
-│  │  expenseService · notificationService · reportService   │  │
-│  │  savingsGoalService · predictionService                  │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│                                                                 │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │              GROQ AI MULTI-AGENT PIPELINE                │  │
-│  │  Categorizer -> Patterns -> Savings -> Budget -> Orchestrator│  │
-│  └──────────────────────────────────────────────────────────┘  │
-└───────────────────────────────┬─────────────────────────────────┘
-                                │ Mongoose ODM
-┌───────────────────────────────▼─────────────────────────────────┐
-│                        MONGODB ATLAS                            │
-│  User · Expense · AIReport · MonthlyReport · HealthScore       │
-│  SavingsGoal · Notification                                     │
-└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           CLIENT (React 18 + Vite)                      │
+│                                                                         │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
+│  │  Dashboard   │  │ Budget Plan  │  │ Predictions  │  │ AI Chat /    │ │
+│  │ (Recharts)   │  │ (& PDF Gen)  │  │ Forecasts    │  │ Categorizer  │ │
+│  └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘ │
+│         │                 │                 │                 │         │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │                    Axios HTTP + Auth Context                      │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+└────────────────────────────────────┬────────────────────────────────────┘
+                                     │ HTTPS REST API
+┌────────────────────────────────────▼────────────────────────────────────┐
+│                       EXPRESS.JS BACKEND (Node.js)                       │
+│                                                                         │
+│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐  ┌───────────┐  │
+│  │ Auth Routes  │   │Expense Routes│   │ AI Routes    │  │Budget/Goal│  │
+│  │ JWT + bcrypt │   │ CRUD & Filter│   │ Agents & Chat│  │Routes     │  │
+│  └──────────────┘   └──────────────┘   └──────────────┘  └───────────┘  │
+│                                                                         │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │                     GROQ AI MULTI-AGENT PIPELINE                  │  │
+│  │     Orchestrator ➔ Categorizer ➔ Pattern ➔ Savings ➔ Budget       │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+└────────────────────────────────────┬────────────────────────────────────┘
+                                     │ Mongoose ODM
+┌────────────────────────────────────▼────────────────────────────────────┐
+│                           MONGODB ATLAS                                 │
+│  Users · Expenses · AIReports · MonthlyReports · HealthScores           │
+│  SavingsGoals · Notifications                                           │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Folder Structure
+## 📁 Folder Structure
 
 ```
 SpendSense AI/
 ├── backend/
 │   ├── src/
-│   │   ├── agents/                   # Groq AI agent definitions
-│   │   │   ├── orchestratorAgent.js  # Multi-agent pipeline coordinator
-│   │   │   ├── categorizerAgent.js   # Expense auto-categorizer
+│   │   ├── agents/                   # Groq AI Multi-Agent Implementations
+│   │   │   ├── prompts/              # System Prompts & Structured Schemas
+│   │   │   │   ├── budgetPrompt.js
+│   │   │   │   ├── categorizerPrompt.js
+│   │   │   │   ├── healthScorePrompt.js
+│   │   │   │   ├── monthlyReportPrompt.js
+│   │   │   │   ├── patternPrompt.js
+│   │   │   │   ├── predictionPrompt.js
+│   │   │   │   └── savingsPrompt.js
+│   │   │   ├── budgetPlannerAgent.js # 50/30/20 Envelope & PDF Data Generator
+│   │   │   ├── categorizerAgent.js   # Expense Auto-Categorizer
+│   │   │   ├── chatAgent.js          # Context-Aware Financial Chat
+│   │   │   ├── financeAgent.js       # Core Agent Helper
+│   │   │   ├── healthScoreAgent.js   # 4-Pillar Wellness Calculator
+│   │   │   ├── monthlyReportAgent.js # Monthly Audit Generator
+│   │   │   ├── orchestratorAgent.js  # Pipeline Coordinator
 │   │   │   ├── patternAnalyzerAgent.js
-│   │   │   ├── savingsAdvisorAgent.js
-│   │   │   ├── budgetPlannerAgent.js
-│   │   │   ├── healthScoreAgent.js
-│   │   │   ├── monthlyReportAgent.js
 │   │   │   ├── predictionAgent.js
-│   │   │   ├── chatAgent.js
+│   │   │   ├── savingsAdvisorAgent.js# Savings Strategies & Overspending Alerts
 │   │   │   └── savingsGoalAgent.js
-│   │   ├── config/
-│   │   │   ├── db.js                 # MongoDB connection
-│   │   │   └── env.js                # Environment config
-│   │   ├── controllers/              # Route handler logic
-│   │   ├── middleware/
-│   │   │   ├── authMiddleware.js     # JWT verification
-│   │   │   ├── errorHandler.js
-│   │   │   └── rateLimiter.js
-│   │   ├── models/                   # Mongoose schemas
-│   │   │   ├── User.js
-│   │   │   ├── Expense.js
-│   │   │   ├── AIReport.js
-│   │   │   ├── MonthlyReport.js
-│   │   │   ├── HealthScore.js
-│   │   │   ├── SavingsGoal.js
-│   │   │   └── Notification.js
-│   │   ├── routes/                   # Express routers
-│   │   ├── services/                 # Business logic layer
-│   │   ├── utils/                    # ApiError, ApiResponse, asyncHandler
-│   │   └── server.js
-│   ├── .env
+│   │   ├── config/                   # Database (db.js) & Env Setup
+│   │   ├── controllers/              # Request Handlers
+│   │   ├── middleware/               # Auth (JWT), Rate Limiter, Error Handler
+│   │   ├── models/                   # Mongoose Schemas (User, Expense, Goal, etc.)
+│   │   ├── routes/                   # Express Routers
+│   │   ├── services/                 # Business Logic & Service Integration Layer
+│   │   └── server.js                 # Entry Point
+│   ├── .env.example
 │   └── package.json
 │
 ├── frontend/
 │   ├── src/
-│   │   ├── api/                      # Axios API call modules
-│   │   ├── components/
-│   │   │   ├── ai/                   # AI section components + pipeline loader
-│   │   │   ├── common/               # Shared UI (StatCard, Toast, Bell, Loader)
-│   │   │   └── dashboard/            # Charts & widgets
-│   │   ├── context/
-│   │   │   ├── AuthContext.jsx
-│   │   │   └── NotificationContext.jsx
-│   │   ├── hooks/                    # useApi, custom hooks
-│   │   ├── layouts/
-│   │   │   └── DashboardLayout.jsx
-│   │   ├── pages/                    # All route pages
-│   │   │   ├── Dashboard.jsx
+│   │   ├── api/                      # Axios API Clients
+│   │   ├── components/               # React UI Components
+│   │   │   ├── ai/                   # AI Analysis Pipeline Loaders & Sections
+│   │   │   ├── common/               # StatCard, Toast, Bell, Loaders
+│   │   │   └── dashboard/            # Recharts Analytics Grid & Widgets
+│   │   ├── context/                  # AuthContext & NotificationContext
+│   │   ├── layouts/                  # DashboardLayout
+│   │   ├── pages/                    # React Router Page Views
+│   │   │   ├── AddExpense.jsx
 │   │   │   ├── AIAnalysis.jsx
-│   │   │   ├── AIPrediction.jsx
-│   │   │   ├── MonthlyReport.jsx
-│   │   │   ├── SavingsGoals.jsx
-│   │   │   ├── BudgetPlanner.jsx
-│   │   │   ├── HealthScore.jsx
 │   │   │   ├── AIFinanceChat.jsx
-│   │   │   └── ExpenseHistory.jsx
-│   │   ├── utils/                    # Formatters, helpers, constants
+│   │   │   ├── AIPrediction.jsx
+│   │   │   ├── BudgetPlanner.jsx     # Budget Caps & PDF Export
+│   │   │   ├── CategorizerPage.jsx   # Interactive Expense Categorizer
+│   │   │   ├── Dashboard.jsx         # Financial Command Center
+│   │   │   ├── ExpenseHistory.jsx
+│   │   │   ├── HealthScore.jsx
+│   │   │   ├── Landing.jsx
+│   │   │   ├── Login.jsx / Register.jsx
+│   │   │   ├── MonthlyReport.jsx     # Monthly Audit & PDF Download
+│   │   │   ├── Profile.jsx
+│   │   │   ├── SavingsAdvisorPage.jsx# Advisor Insights & Overspending Alerts
+│   │   │   └── SavingsGoals.jsx
+│   │   ├── utils/                    # Formatters & Constants
 │   │   ├── App.jsx
 │   │   ├── main.jsx
-│   │   └── index.css
-│   ├── .env
+│   │   └── index.css                 # Glassmorphic & Dark Theme Styles
 │   ├── tailwind.config.js
 │   ├── vite.config.js
 │   └── package.json
 │
-├── package.json                      # Root scripts (concurrently)
+├── package.json                      # Root Concurrently Scripts
 └── README.md
 ```
 
 ---
 
-## Installation
+## 🛠️ Installation & Setup
 
 ### Prerequisites
 
-- **Node.js** v18+
-- **npm** v9+
-- **MongoDB Atlas** account (or local MongoDB)
-- **Groq API Key** — [Get one free at console.groq.com](https://console.groq.com)
+- **Node.js** v18 or higher
+- **npm** v9 or higher
+- **MongoDB** instance (Local or MongoDB Atlas)
+- **Groq API Key** (Free access at [console.groq.com](https://console.groq.com))
 
-### 1. Clone the Repository
+### Step 1: Clone the Repository
 
 ```bash
 git clone https://github.com/mjjaiavinash/Multi-Agent-Personal-Finance-Companion.git
 cd Multi-Agent-Personal-Finance-Companion
 ```
 
-### 2. Install All Dependencies
+### Step 2: Install Dependencies
+
+Install root dependencies and workspace dependencies concurrently:
 
 ```bash
-# Install root + both workspaces
 npm install
+```
 
-# Or install individually:
+Alternatively, install individually:
+
+```bash
 cd backend && npm install
 cd ../frontend && npm install
 ```
 
-### 3. Configure Environment Variables
+### Step 3: Configure Environment Variables
+
+Create `.env` files in both `backend/` and `frontend/` directories:
 
 ```bash
-# Copy example env files
 cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 ```
 
-> See [Environment Variables](#environment-variables) section for required keys.
+### Step 4: Run Development Server
 
-### 4. Start Development Servers
+Start both the Express backend server (port 5000) and Vite frontend dev server (port 5173) simultaneously from the project root:
 
 ```bash
-# Run both backend and frontend concurrently from root
 npm run dev
 ```
 
-Or start individually:
-
-```bash
-# Backend (port 5000)
-cd backend && npm run dev
-
-# Frontend (port 5173)
-cd frontend && npm run dev
-```
-
-### 5. Open in Browser
-
-```
-http://localhost:5173
-```
+Visit `http://localhost:5173` in your browser.
 
 ---
 
-## Environment Variables
+## 🔑 Environment Variables
 
-### Backend — `backend/.env`
+### Backend (`backend/.env`)
 
 ```env
-# Server
 NODE_ENV=development
 PORT=5000
 
 # Database
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/spendsense
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/spendsense?retryWrites=true&w=majority
 
-# Auth
-JWT_SECRET=your_super_secret_jwt_key_here
+# Security / Auth
+JWT_SECRET=your_jwt_secret_key_here
 JWT_EXPIRES_IN=7d
 
-# Groq AI
+# Groq AI Platform Key
 GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-# CORS
+# CORS Config
 CLIENT_URL=http://localhost:5173
 ```
 
-### Frontend — `frontend/.env`
+### Frontend (`frontend/.env`)
 
 ```env
 VITE_API_BASE_URL=http://localhost:5000/api/v1
@@ -367,233 +361,122 @@ VITE_API_BASE_URL=http://localhost:5000/api/v1
 
 ---
 
-## Tech Stack
+## 💻 Tech Stack
 
-### Backend
+### Backend Stack
+- **Runtime**: Node.js (v18+)
+- **Framework**: Express.js (v5.x)
+- **Database & ODM**: MongoDB Atlas + Mongoose (v8.x)
+- **AI Engine**: Groq SDK (`llama-3.3-70b-versatile`)
+- **Authentication**: JSON Web Tokens (JWT) + bcryptjs
+- **Security & Optimization**: Helmet, Morgan, Express Mongo Sanitize, Rate Limiter, Compression
 
-| Technology | Version | Purpose |
-|---|---|---|
-| **Node.js** | 18+ | Runtime environment |
-| **Express.js** | 5.x | REST API framework |
-| **MongoDB** | Atlas | Primary database |
-| **Mongoose** | 8.x | ODM for MongoDB |
-| **Groq SDK** | Latest | AI model API client |
-| **Llama 3.3 70B** | — | Large Language Model |
-| **JWT** | — | Stateless authentication |
-| **bcryptjs** | — | Password hashing |
-| **Helmet** | — | HTTP security headers |
-| **Morgan** | — | HTTP request logging |
-| **express-mongo-sanitize** | — | NoSQL injection prevention |
-| **express-rate-limit** | — | API rate limiting |
-| **compression** | — | Gzip response compression |
-
-### Frontend
-
-| Technology | Version | Purpose |
-|---|---|---|
-| **React** | 18 | UI library |
-| **Vite** | 5 | Build tool & dev server |
-| **TailwindCSS** | 3 | Utility-first styling |
-| **Recharts** | 2.x | Data visualization charts |
-| **React Router** | 6 | Client-side routing |
-| **Axios** | — | HTTP API client |
-| **Lucide React** | — | Icon library |
-| **jsPDF** | — | Client-side PDF generation |
+### Frontend Stack
+- **Framework**: React 18
+- **Build Tool**: Vite 5
+- **Styling**: TailwindCSS 3 (Glassmorphism & Sleek Dark UI Palette)
+- **Data Visualization**: Recharts (Pie, Bar, Line, Area charts)
+- **PDF Generation**: jsPDF
+- **Routing**: React Router v6
+- **Icons**: Lucide React
 
 ---
 
-## API Endpoints
+## 📡 API Endpoints
 
-### Authentication — `/api/v1/auth`
-
-| Method | Endpoint | Description | Auth |
+### Authentication (`/api/v1/auth`)
+| Method | Endpoint | Description | Auth Required |
 |---|---|---|---|
-| `POST` | `/register` | Register new user | No |
-| `POST` | `/login` | Login & get JWT token | No |
+| `POST` | `/register` | Register a new user | No |
+| `POST` | `/login` | Authenticate user & return JWT | No |
 | `GET` | `/me` | Get current user profile | Yes |
-| `PUT` | `/me` | Update profile & settings | Yes |
+| `PUT` | `/me` | Update profile information | Yes |
 
-### Expenses — `/api/v1/expenses`
-
-| Method | Endpoint | Description | Auth |
+### Expense Management (`/api/v1/expenses`)
+| Method | Endpoint | Description | Auth Required |
 |---|---|---|---|
-| `POST` | `/` | Add new expense | Yes |
-| `GET` | `/` | List expenses (filter, sort, paginate) | Yes |
-| `GET` | `/summary` | Get category, monthly & totals summary | Yes |
-| `PUT` | `/:id` | Update expense | Yes |
-| `DELETE` | `/:id` | Delete expense | Yes |
+| `POST` | `/` | Create a new expense | Yes |
+| `GET` | `/` | Fetch user expenses (with filters & search) | Yes |
+| `GET` | `/summary` | Get aggregated expense stats | Yes |
+| `PUT` | `/:id` | Update an existing expense | Yes |
+| `DELETE` | `/:id` | Delete an expense | Yes |
 
-### AI Agents — `/api/v1`
-
-| Method | Endpoint | Description | Auth |
+### AI Multi-Agent Services (`/api/v1`)
+| Method | Endpoint | Description | Auth Required |
 |---|---|---|---|
-| `POST` | `/categorizer/categorize` | Auto-categorize an expense | Yes |
-| `POST` | `/analysis/patterns` | Run pattern analysis | Yes |
-| `GET` | `/savings/advice` | Get savings recommendations | Yes |
-| `GET` | `/budget/plan` | Generate budget plan | Yes |
-| `POST` | `/orchestrator/analyze` | Run full multi-agent pipeline | Yes |
-| `GET` | `/health-score/latest` | Get latest health score | Yes |
-| `POST` | `/health-score/generate` | Generate new health score | Yes |
-| `GET` | `/ai/predictions` | Get AI spending predictions | Yes |
-| `POST` | `/ai/chat` | AI finance chat message | Yes |
+| `POST` | `/categorizer/categorize` | Auto-categorize expense transaction | Yes |
+| `POST` | `/analysis/patterns` | Execute pattern analysis agent | Yes |
+| `GET` | `/savings/advice` | Get savings advice & overspending alerts | Yes |
+| `GET` | `/budget/plan` | Generate 50/30/20 budget allocation | Yes |
+| `POST` | `/orchestrator/analyze` | Trigger full 10-agent pipeline run | Yes |
+| `GET` | `/health-score/latest` | Fetch latest financial health score | Yes |
+| `POST` | `/health-score/generate` | Recalculate health score | Yes |
+| `GET` | `/ai/predictions` | Fetch weekly/monthly expense predictions | Yes |
+| `POST` | `/ai/chat` | Send prompt to AI Finance Chat Agent | Yes |
 
-### Monthly Reports — `/api/v1/monthly-report`
-
-| Method | Endpoint | Description | Auth |
+### Monthly Reports (`/api/v1/monthly-report`)
+| Method | Endpoint | Description | Auth Required |
 |---|---|---|---|
-| `GET` | `/:month` | Get report for YYYY-MM | Yes |
-| `POST` | `/:month/generate` | Generate / regenerate report | Yes |
-| `GET` | `/history` | List available report months | Yes |
+| `GET` | `/:month` | Retrieve audit report for YYYY-MM | Yes |
+| `POST` | `/:month/generate` | Generate/regenerate monthly audit | Yes |
+| `GET` | `/history` | Fetch history of available reports | Yes |
 
-### Savings Goals — `/api/v1/savings-goals`
-
-| Method | Endpoint | Description | Auth |
+### Savings Goals (`/api/v1/savings-goals`)
+| Method | Endpoint | Description | Auth Required |
 |---|---|---|---|
-| `POST` | `/` | Create savings goal | Yes |
-| `GET` | `/` | List all goals | Yes |
-| `PUT` | `/:id` | Update goal | Yes |
-| `DELETE` | `/:id` | Delete goal | Yes |
-| `POST` | `/:id/deposit` | Add deposit to goal | Yes |
-| `GET` | `/:id/suggestions` | Get AI acceleration suggestions | Yes |
-
-### Notifications — `/api/v1/notifications`
-
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| `GET` | `/` | List notifications (last 20) | Yes |
-| `GET` | `/unread-count` | Get unread notification count | Yes |
-| `PATCH` | `/:id/read` | Mark notification as read | Yes |
-| `PATCH` | `/read-all` | Mark all notifications as read | Yes |
+| `POST` | `/` | Create a savings goal | Yes |
+| `GET` | `/` | Fetch all savings goals | Yes |
+| `POST` | `/:id/deposit` | Add funds to a goal | Yes |
+| `GET` | `/:id/suggestions` | Fetch AI acceleration tips | Yes |
 
 ---
 
-## Screenshots
+## 📄 PDF Report Generation
 
-> _Screenshots will be added after deployment._
+SpendSense AI includes built-in, client-side PDF document compilation using `jsPDF`:
 
-| Screen | Preview |
-|---|---|
-| Dashboard with Analytics Grid | `[Screenshot Placeholder]` |
-| AI Analysis Pipeline Loader | `[Screenshot Placeholder]` |
-| Monthly Financial Report | `[Screenshot Placeholder]` |
-| AI Spending Predictions | `[Screenshot Placeholder]` |
-| Savings Goal Tracker | `[Screenshot Placeholder]` |
-| Smart Notification Bell | `[Screenshot Placeholder]` |
-| AI Finance Chat | `[Screenshot Placeholder]` |
-| Health Score Dashboard | `[Screenshot Placeholder]` |
+1. **Budget Plan PDF**: Export clean, 100% allocated budget breakdowns, category cap limits, and savings targets directly from the Budget Planner view (`/budget`).
+2. **Monthly Audit PDF**: Download full end-of-month executive summaries, health score cards, expense breakdowns, and strategic action plans from the Monthly Report view (`/monthly-report`).
 
 ---
 
-## Deployment
+## 🚀 Deployment
 
-### Backend — Render / Railway / Fly.io
+### Backend (Render / Railway / Fly.io)
+1. Link your repository and set the root directory to `backend/`.
+2. Configure environment variables (`MONGODB_URI`, `GROQ_API_KEY`, `JWT_SECRET`, `CLIENT_URL`).
+3. Build Command: `npm install`
+4. Start Command: `npm start`
 
-1. Push `backend/` to your hosting platform.
-2. Set all environment variables from [Environment Variables](#environment-variables).
-3. Build command: `npm install`
-4. Start command: `npm start`
-
-### Frontend — Vercel / Netlify
-
-1. Connect your GitHub repository.
-2. Set root directory to `frontend/`.
-3. Build command: `npm run build`
-4. Output directory: `dist/`
-5. Set `VITE_API_BASE_URL` to your deployed backend URL.
-
-### Docker (Optional)
-
-```bash
-# Build and run backend
-docker build -t spendsense-backend ./backend
-docker run -p 5000:5000 --env-file backend/.env spendsense-backend
-
-# Build and run frontend
-docker build -t spendsense-frontend ./frontend
-docker run -p 3000:80 spendsense-frontend
-```
+### Frontend (Vercel / Netlify)
+1. Connect your repository and set the root directory to `frontend/`.
+2. Set Build Command: `npm run build`
+3. Set Output Directory: `dist`
+4. Environment Variable: `VITE_API_BASE_URL=https://<your-backend-url>/api/v1`
 
 ---
 
-## Future Scope
+## 🔮 Future Scope
 
-| Feature | Status | Priority |
-|---|---|---|
-| React Native Mobile App | Planned | High |
-| Bank Account Integration (Plaid/Setu) | Planned | High |
-| Multi-Currency Support | Planned | Medium |
-| Family/Group Finance Tracking | Planned | Medium |
-| Financial Goals Social Sharing | Planned | Medium |
-| Advanced Tax Estimation Reports | Planned | Medium |
-| UPI/Payment Gateway Integration | Planned | High |
-| Voice Command Expense Entry | Planned | Low |
-| Weekly Digest Email Reports | Planned | Low |
-| Two-Factor Authentication | Planned | Medium |
+- 🏦 **Open Banking / Plaid Integration**: Direct bank feed sync for automated transaction importing.
+- 📱 **React Native Mobile App**: iOS & Android cross-platform companion app.
+- 🌐 **Multi-Currency & FX Engine**: Automatic currency conversion and localized budget models.
+- 👥 **Shared / Family Budgets**: Multi-user shared vaults and joint goal tracking.
+- 🔐 **WebAuthn / 2FA**: Hardware security key & biometric authentication.
 
 ---
 
-## Hackathon Details
+## 📄 License
 
-> Built for **[Hackathon Name]** — Track: **FinTech / AI Applications**
-
-| Detail | Info |
-|---|---|
-| **Event** | [Hackathon Name] |
-| **Date** | [Date Range] |
-| **Track** | FinTech / AI / Full Stack |
-| **Problem Statement** | Democratizing financial intelligence for everyone using AI |
-| **Team Name** | [Team Name] |
-| **Demo URL** | [Live Demo Link] |
-| **Demo Video** | [Video Link] |
-
-### Why SpendSense AI?
-
-Most financial apps show you **what happened**. SpendSense AI tells you **what's happening, why it's happening, and what to do about it** — powered by a multi-agent AI pipeline that thinks like a personal CFO.
-
----
-
-## Contributors
-
-<div align="center">
-
-| Name | Role |
-|---|---|
-| **[Your Name]** | Full Stack Developer & AI Engineer |
-| **[Team Member 2]** | Frontend Developer |
-| **[Team Member 3]** | Backend & Database |
-
-</div>
-
----
-
-## License
-
-```
-MIT License
-
-Copyright (c) 2025 SpendSense AI
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-```
+Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
 <div align="center">
 
-Made by the SpendSense AI Team
+Made with ❤️ by the **SpendSense AI Team**
 
-**Star this repo** if you found it useful!
+⭐ **Star this repository** if you found SpendSense AI helpful!
 
 [![GitHub stars](https://img.shields.io/github/stars/mjjaiavinash/Multi-Agent-Personal-Finance-Companion?style=social)](https://github.com/mjjaiavinash/Multi-Agent-Personal-Finance-Companion)
 
