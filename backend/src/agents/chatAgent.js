@@ -15,15 +15,25 @@ import { generateChat } from "../services/groqService.js";
  * @returns {"affordability" | "trend" | "budget" | "savings" | "general"}
  */
 const detectIntent = (message) => {
-  const lower = message.toLowerCase();
+  const lower = message.trim().toLowerCase();
+
+  // Greetings: "hi", "hii", "hello", "hey", "good morning", etc.
+  if (/^(hi+|hello|hey|greetings|good morning|good evening|good afternoon|howdy)(\s|!|\.|$)/i.test(lower)) {
+    return "greeting";
+  }
+
+  // Direct Spending Query: "how much money i spend", "how much did i spend", "total spent", "my spend"
+  if (/how much (money |did i |have i |i |my )?(spend|spent)|total (spend|spent|expense|expenses)|my total spend/.test(lower)) {
+    return "spending_query";
+  }
 
   // Affordability: "can I buy", "can I afford", "should I buy", "is it worth"
   if (/can i (buy|afford|get|purchase)|should i buy|worth buying|afford/.test(lower)) {
     return "affordability";
   }
 
-  // Trend / Spending / Total spent: "how much", "how much money", "total spent", "spent", "expenses", "used"
-  if (/how much|total spent|my spend|my expense|iam used|used|how much money|why (did|is|are)|more this month|spend more|increased|went up|higher than/.test(lower)) {
+  // Trend / Spending Comparison: "why did I spend more", "more this month", "increased"
+  if (/why (did|is|are)|more this month|spend more|increased|went up|higher than/.test(lower)) {
     return "trend";
   }
 
@@ -46,45 +56,71 @@ const detectIntent = (message) => {
  * Returns additional instructions appended to the system prompt based on intent.
  * Each intent gets a specific response format that matches user expectations.
  *
- * @param {"affordability"|"trend"|"budget"|"savings"|"general"} intent
+ * @param {"greeting"|"spending_query"|"affordability"|"trend"|"budget"|"savings"|"general"} intent
  * @returns {string}
  */
 const getIntentInstructions = (intent) => {
   const instructions = {
+    greeting: `
+RESPONSE FORMAT FOR GREETINGS (e.g. "hii", "hello", "hey"):
+1. Reply with a warm, friendly, professional greeting.
+2. Briefly introduce yourself as SpendSense AI.
+3. List 3-4 specific financial topics the user can ask you (e.g., Affordability checks, Spending trend analysis, 50/30/20 Budget planning, Expense cutting).
+4. CRITICAL: DO NOT dump or list raw financial snapshot zeroes or tell the user to configure settings. Keep it crisp, inviting, and under 80 words.`,
+
+    spending_query: `
+RESPONSE FORMAT FOR SPENDING QUERIES (e.g. "how much money i spend this month", "how much did I spend"):
+1. Start immediately with a clear, direct summary of their spending:
+   • Recent Active Spending: **₹X**
+   • All-Time Total Spent: **₹Y** across **N** logged transactions.
+2. Show their top category breakdown with exact ₹ amounts and percentage shares:
+   • Food & Dining: **₹A** (X%)
+   • Housing & EMI: **₹B** (Y%)
+   • Shopping / Other: **₹C** (Z%)
+3. Quote 3-4 specific logged transaction titles from their recent history list (e.g. "• Starbucks Coffee: ₹250", "• Zomato: ₹450").
+4. CRITICAL: NEVER claim "the exact figure is ₹0" or say "you haven't spent any money" if total spent is greater than ₹0. If current calendar month has no new entries, state: "In your recent active period you logged **₹X** (and **₹Y** total across all history)."`,
+
     affordability: `
-RESPONSE FORMAT FOR AFFORDABILITY QUESTIONS:
-1. Start with a direct YES or NO verdict based on the user's financial data.
-2. Show the math: current monthly surplus, cost of item, impact on budget.
-3. Give a concrete recommendation: buy now / save for X months / avoid.
-4. Keep it under 150 words. Be direct, not preachy.`,
+RESPONSE FORMAT FOR AFFORDABILITY QUESTIONS (e.g. "Can I afford a ₹50,000 laptop this month?"):
+1. Start immediately with a clear **VERDICT**: **YES**, **NO**, or **RECOMMENDED SAVINGS PLAN**.
+2. Show the exact math using numbers from the financial snapshot:
+   • Monthly Income Baseline: **₹X**
+   • Average Monthly Spending: **₹Y**
+   • Net Monthly Surplus: **₹(X - Y)**
+3. Evaluate the purchase against their surplus. If the item costs ₹50,000 and net monthly surplus is ₹35,000:
+   • Calculate exact timeline: "Saving for 1.4 months (or setting aside ₹25,000/month for 2 months) enables you to buy it safely without debt."
+4. Provide a 2-step financial advice bullet list. Keep response under 180 words.`,
 
     trend: `
-RESPONSE FORMAT FOR TREND/SPENDING QUESTIONS:
-1. Identify the specific category or categories driving the increase using the data.
-2. Quantify the change: "Your Food & Dining spend rose from $X to $Y (+Z%)".
-3. Suggest 2 specific actions to reverse the trend.
-4. Reference actual months and amounts from the data — never be vague.`,
+RESPONSE FORMAT FOR TREND/SPENDING COMPARISON QUESTIONS (e.g. "Why did I spend more this month than last month?"):
+1. State the exact overall figures from the snapshot:
+   • Recent Spending: **₹X**
+   • Prior Period Spending: **₹Y**
+   • Variance: **+₹(X - Y)** (+Z% increase).
+2. Highlight the top 2-3 specific category drivers responsible for the increase (e.g. Food & Dining, Shopping, Housing & EMI) with exact ₹ figures from Spending by Category.
+3. Provide 2 concrete corrective action steps to lower spending back to baseline.`,
 
     budget: `
-RESPONSE FORMAT FOR BUDGET PLANNING QUESTIONS:
-1. Propose a concrete monthly budget using the 50/30/20 rule as a baseline.
-2. Show category-by-category allocations based on the user's actual spending history.
-3. Highlight the 2-3 categories that need the most adjustment.
-4. End with one specific first step the user can take today.`,
+RESPONSE FORMAT FOR BUDGET PLANNING QUESTIONS (e.g. "Help me plan a realistic monthly budget."):
+1. Construct a concrete 50/30/20 monthly budget breakdown based on their income:
+   • **Needs (50%)**: **₹X** (Housing & EMI, Bills & Utilities, Healthcare)
+   • **Wants (30%)**: **₹Y** (Food & Dining, Shopping, Entertainment)
+   • **Savings & Investments (20%)**: **₹Z** (Emergency Fund, Goals)
+2. Provide custom category limits tailored to their top spending categories.
+3. End with one high-impact action step they can execute today.`,
 
     savings: `
-RESPONSE FORMAT FOR SAVINGS QUESTIONS:
-1. Calculate a realistic monthly savings target (minimum 10-20% of estimated income).
-2. Identify the top 3 specific cuts the user can make based on their actual data.
-3. Show the compounding impact: "Saving $X/month = $Y in 12 months".
-4. Suggest one automated savings strategy (e.g., auto-transfer on payday).`,
+RESPONSE FORMAT FOR SAVINGS / CUT EXPENSES QUESTIONS (e.g. "Which expenses should I cut first to save money?"):
+1. Identify the top 3 highest non-essential spending categories from their actual data (e.g., Food & Dining, Shopping, Entertainment).
+2. Show specific ₹ reduction targets for each category (e.g. "Cut Food & Dining by 20% to save ₹3,500/month").
+3. Calculate 12-month compounding impact: "Saving **₹X/month** = **₹(X * 12)** saved in 1 year."
+4. Suggest one automated rule (e.g., auto-transfer 20% on payday).`,
 
     general: `
 RESPONSE FORMAT FOR GENERAL QUESTIONS:
-1. Answer directly and specifically using the user's financial data.
-2. Include at least one concrete number from their spending history.
-3. End with one actionable next step.
-4. Keep responses concise — under 200 words unless a detailed breakdown is requested.`,
+1. Answer directly with high financial authority.
+2. Quote exact numbers from the user's financial snapshot.
+3. Provide an actionable recommendation.`,
   };
 
   return instructions[intent] || instructions.general;
@@ -93,7 +129,7 @@ RESPONSE FORMAT FOR GENERAL QUESTIONS:
 // ─── System Prompt Builder ────────────────────────────────────────────────────
 
 /**
- * Builds a rich, structured system prompt that grounds Gemini in the user's
+ * Builds a rich, structured system prompt that grounds Gemini/Groq in the user's
  * actual financial data and configures its persona, capabilities, and constraints.
  *
  * @param {Object} context - Enriched financial context from the service layer
@@ -114,12 +150,12 @@ const buildSystemPrompt = (context, intent) => {
   const financialSnapshot = `
 ━━━ USER'S REAL-TIME FINANCIAL SNAPSHOT ━━━
 User Name:                  ${context?.userName || "User"}
-Monthly Income:             ${income > 0 ? fmt(income) : "Not set"}
-Monthly Budget Target:      ${budget > 0 ? fmt(budget) : "Not set"}
-Available Balance:          ${fmt(available)}
+Monthly Income:             ${fmt(income)}
+Monthly Budget Target:      ${fmt(budget)}
+Available Monthly Balance:  ${fmt(available)}
 Total Spent (All-Time):     ${fmt(totalSpent)}
-This Month's Spending:      ${fmt(thisMonth)}
-Last Month's Spending:      ${fmt(lastMonth)}
+Recent Active Month Spend:  ${fmt(thisMonth)}
+Prior Period Spend:         ${fmt(lastMonth)}
 Total Transactions Logged:  ${count}
 Average Per Transaction:    ${fmt(context?.avgPerDay || 0)}
 
@@ -128,19 +164,28 @@ ${
   context?.byCategory && Object.keys(context.byCategory).length > 0
     ? Object.entries(context.byCategory)
         .sort(([, a], [, b]) => b - a)
-        .map(([cat, amt]) => `  • ${cat}: ${fmt(amt)}`)
+        .map(([cat, amt]) => `  • ${cat}: ${fmt(amt)} (${totalSpent > 0 ? Math.round((amt / totalSpent) * 100) : 0}% of total)`)
         .join("\n")
     : "  No category spending logged yet."
 }
 
-Monthly Trend (last 6 months):
+Recent Logged Transactions (Last 10):
+${
+  context?.recentExpenses && context.recentExpenses.length > 0
+    ? context.recentExpenses
+        .map((e) => `  • ${e.title} (${e.category}): ${fmt(e.amount)} on ${e.date}`)
+        .join("\n")
+    : "  No recent transactions listed."
+}
+
+Monthly Trend History:
 ${
   context?.monthly && context.monthly.length > 0
     ? context.monthly.map((m) => `  • ${m.month}: ${fmt(m.total)}`).join("\n")
     : "  No monthly trend history yet."
 }
 
-Recurring Expenses:
+Recurring Expenses / Subscriptions:
 ${
   context?.recurringExpenses && context.recurringExpenses.length > 0
     ? context.recurringExpenses
@@ -151,30 +196,24 @@ ${
 }
 `;
 
-  return `You are SpendSense AI — a professional personal finance assistant built into the SpendSense expense tracking app.
+  return `You are SpendSense AI — a premier personal finance assistant built into the SpendSense app.
 
 ━━━ YOUR PERSONA ━━━
-• Expert-level financial knowledge, delivered in plain English
-• Data-driven: always reference the user's actual numbers from the financial snapshot below
-• Direct and honest: give clear verdicts, not wishy-washy "it depends" answers
-• Empathetic but not preachy: acknowledge trade-offs without lecturing
-• Concise: respect the user's time — no padding, no filler sentences
+• Highly intelligent financial advisor with deep mastery of budgeting, savings, and expense optimization.
+• Data-driven: ALWAYS ground your reasoning in the exact numbers from the FINANCIAL SNAPSHOT below.
+• Direct & Decisive: Give clear verdicts (YES, NO, or STEP-BY-STEP PLAN), not vague "maybe" responses.
+• Use clear formatting: Bold key amounts with **, use bullet points, and structure with clean headers.
 
-━━━ YOUR CAPABILITIES ━━━
-• Spending query: "How much did I spend this month / total?" → quote exact figures from snapshot
-• Affordability analysis: "Can I buy X?" → calculate impact on budget and give a verdict
-• Spending trend diagnosis: "Why did I spend more?" → identify the exact categories and amounts
-• Budget planning: "Help me plan my budget" → propose category-by-category allocations
-• Savings coaching: "How can I save more?" → identify specific cuts with dollar amounts
 ${financialSnapshot}
-━━━ STRICT RULES ━━━
-1. ALWAYS state exact figures from the FINANCIAL SNAPSHOT above when asked about money, spending, income, or budget.
-2. When asked about spending, state both "This Month's Spending: ${fmt(thisMonth)}" and "All-Time Total Spent: ${fmt(totalSpent)}" (${count} total transactions logged). If This Month is ₹0 but All-Time total spent is greater than ₹0, mention that the expenses were logged under prior dates or all-time entries.
-3. NEVER claim "I don't have any data" or "you haven't added expenses" — the exact snapshot numbers are given above.
-4. Format responses with clear structure: use line breaks between sections, bold key numbers with **, and use bullet points for lists.
-5. Keep responses under 250 words unless the user explicitly asks for a detailed breakdown.
-6. CRITICAL: Always rely on the latest REAL-TIME FINANCIAL SNAPSHOT above for current figures. Ignore any previous turn history in the chat where you previously reported zero or missing data.
+
+━━━ MANDATORY RULES ━━━
+1. FOR GREETINGS (e.g. "hi", "hii", "hello"): Reply warmly, introduce yourself, and invite financial questions. DO NOT dump or list raw financial snapshot stats.
+2. FOR SPENDING QUERIES (e.g. "how much money i spend this month"): State recent active spending (**${fmt(thisMonth)}**) and total spent (**${fmt(totalSpent)}** across ${count} transactions). Show top categories and list 2-3 recent transaction names from the snapshot.
+3. NEVER claim "your spend is ₹0" or say "you haven't spent any money" if total spent is greater than ₹0.
+4. Format with bold numbers (**₹50,000**), clean bullet points, and concise section headers.
+
 ${getIntentInstructions(intent)}
+
 ━━━ CURRENT DATE ━━━
 ${new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}`;
 };

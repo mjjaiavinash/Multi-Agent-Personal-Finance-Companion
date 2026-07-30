@@ -41,7 +41,7 @@ const buildChatContext = async (userId) => {
 
       // ── 2. Per-category detail with monthly averages ───────────────────────
       Expense.aggregate([
-        { $match: { user: { $in: [userObjId, String(rawId)] }, date: { $gte: sixMonthsAgo } } },
+        { $match: { user: { $in: [userObjId, String(rawId)] } } },
         {
           $group: {
             _id:   "$category",
@@ -58,14 +58,14 @@ const buildChatContext = async (userId) => {
             total:      { $round: ["$total", 2] },
             count:      1,
             monthlyAvg: { $round: [{ $divide: ["$total", 6] }, 2] },
-            percentage: 0,
+            percentage: { $literal: 0 },
           },
         },
       ]),
 
       // ── 3. Recurring expenses ──────────────────────────────────────────────
       Expense.aggregate([
-        { $match: { user: { $in: [userObjId, String(rawId)] }, date: { $gte: sixMonthsAgo } } },
+        { $match: { user: { $in: [userObjId, String(rawId)] } } },
         {
           $group: {
             _id:      { $toLower: { $trim: { input: "$title" } } },
@@ -97,29 +97,66 @@ const buildChatContext = async (userId) => {
 
     // Compute category percentages
     const totalSpent = summary?.totalSpent || 0;
-    const topCategories = categoryDetail.map((c) => ({
+    const topCategories = (categoryDetail || []).map((c) => ({
       ...c,
       percentage: totalSpent > 0
         ? Math.round((c.total / totalSpent) * 1000) / 10
         : 0,
     }));
 
+    // Estimate income & budget baselines if not explicitly set in profile
+    const rawIncome = userRecord?.monthlyIncome || 0;
+    const rawBudget = userRecord?.monthlyBudget || 0;
+
+    // Monthly expenditure estimate
+    const monthlyList = summary?.monthly || [];
+    const avgMonthlySpend = monthlyList.length > 0
+      ? Math.round(monthlyList.reduce((acc, m) => acc + (m.total || 0), 0) / monthlyList.length)
+      : Math.round(totalSpent || 0);
+
+    const estimatedIncome = rawIncome > 0
+      ? rawIncome
+      : (rawBudget > 0 ? Math.round(rawBudget * 1.25) : Math.max(50000, Math.round(avgMonthlySpend * 1.35)));
+
+    const estimatedBudget = rawBudget > 0
+      ? rawBudget
+      : Math.round(estimatedIncome * 0.8);
+
+    // Ensure thisMonth and lastMonth are active for comparison
+    let activeThisMonth = summary?.thisMonth || 0;
+    let activeLastMonth = summary?.lastMonth || 0;
+
+    if (activeThisMonth === 0 && monthlyList.length > 0) {
+      activeThisMonth = monthlyList[monthlyList.length - 1]?.total || 0;
+      activeLastMonth = monthlyList.length > 1 ? (monthlyList[monthlyList.length - 2]?.total || 0) : 0;
+    }
+
     // Merge everything into a single context object for the agent
     const ctxResult = {
-      userName:      userRecord?.name || "User",
-      monthlyIncome: userRecord?.monthlyIncome || 0,
-      monthlyBudget: userRecord?.monthlyBudget || 0,
-      ...(summary || {}),
+      userName:       userRecord?.name || "User",
+      monthlyIncome:  estimatedIncome,
+      isIncomeEstimated: rawIncome === 0,
+      monthlyBudget:  estimatedBudget,
+      isBudgetEstimated: rawBudget === 0,
+      totalSpent,
+      count:          summary?.count || 0,
+      avgPerDay:      summary?.avgPerDay || 0,
+      thisMonth:      activeThisMonth,
+      lastMonth:      activeLastMonth,
+      byCategory:     summary?.byCategory || {},
+      monthly:        monthlyList,
       topCategories,
-      recurringExpenses,
+      recentExpenses: summary?.recentExpenses || [],
+      recurringExpenses: recurringExpenses || [],
     };
 
-    console.log("[aiService] Built chat context:", {
+    console.log("[aiService] Built enriched chat context:", {
       user: ctxResult.userName,
       income: ctxResult.monthlyIncome,
       budget: ctxResult.monthlyBudget,
       totalSpent: ctxResult.totalSpent,
       thisMonth: ctxResult.thisMonth,
+      lastMonth: ctxResult.lastMonth,
       count: ctxResult.count,
     });
 

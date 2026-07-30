@@ -79,7 +79,7 @@ expenseSchema.statics.getSummary = async function (userId) {
   // Direct find query to guarantee 100% accurate fallback matching across ObjectId & String types
   const allExpenses = await this.find({
     user: { $in: [userObjId, String(rawId), String(userObjId)] },
-  }).lean();
+  }).sort({ date: -1 }).lean();
 
   let totalSpent     = 0;
   let thisMonthTotal = 0;
@@ -111,14 +111,23 @@ expenseSchema.statics.getSummary = async function (userId) {
     total: Math.round(total * 100) / 100,
   }));
 
+  // Extract recent 10 transactions
+  const recentExpenses = allExpenses.slice(0, 10).map((e) => ({
+    title: e.title,
+    amount: Number(e.amount),
+    category: e.category,
+    date: new Date(e.date).toISOString().split("T")[0],
+  }));
+
   return {
-    totalSpent:  Math.round(totalSpent * 100) / 100,
-    count:       allExpenses.length,
-    avgPerDay:   allExpenses.length > 0 ? Math.round((totalSpent / allExpenses.length) * 100) / 100 : 0,
-    thisMonth:   Math.round(thisMonthTotal * 100) / 100,
-    lastMonth:   Math.round(lastMonthTotal * 100) / 100,
+    totalSpent:     Math.round(totalSpent * 100) / 100,
+    count:          allExpenses.length,
+    avgPerDay:      allExpenses.length > 0 ? Math.round((totalSpent / allExpenses.length) * 100) / 100 : 0,
+    thisMonth:      Math.round(thisMonthTotal * 100) / 100,
+    lastMonth:      Math.round(lastMonthTotal * 100) / 100,
     byCategory,
     monthly,
+    recentExpenses,
   };
 };
 

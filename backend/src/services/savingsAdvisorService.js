@@ -268,7 +268,7 @@ const getSavingsAdvice = async (userId, months = 6, forceRefresh = false, custom
   context.categoryBreakdown.forEach((cat) => {
     const limitPct = RECOMMENDED_PCT[cat.category] || 0.10;
     const recommendedAmount = Math.round(incomeVal * limitPct);
-    const actualMonthly = cat.monthlyAverage || cat.totalAmount;
+    const actualMonthly = cat.monthlyAvg || cat.monthlyAverage || cat.total || cat.totalAmount || 0;
     const actualPct = Math.round((actualMonthly / incomeVal) * 100);
     const recPctVal = Math.round(limitPct * 100);
 
@@ -312,7 +312,10 @@ const getSavingsAdvice = async (userId, months = 6, forceRefresh = false, custom
  * @param {string} userId
  */
 const invalidateSavingsCache = (userId) => {
-  [3, 6, 12].forEach((m) => bustCache(`savings:${userId}:${m}`));
+  const prefix = `savings:${userId}:`;
+  for (const key of cache.keys()) {
+    if (key.startsWith(prefix)) cache.delete(key);
+  }
   console.log(`[SavingsAdvisorService] Cache invalidated for user ${userId}`);
 };
 

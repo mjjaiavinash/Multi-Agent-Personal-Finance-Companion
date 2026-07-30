@@ -216,12 +216,17 @@ const generateSavingsAdvice = async (context) => {
         reasoning: "Set up automatic SIP transfers on salary day to enforce disciplined savings.",
       },
     ],
-    categoryRecommendations: (context.categoryBreakdown || []).map((cat) => ({
-      category: cat.category,
-      currentSpend: Math.round(cat.monthlyAverage || cat.totalAmount || 0),
-      targetSpend: Math.round((cat.monthlyAverage || cat.totalAmount || 0) * 0.80),
-      recommendation: `Trim 20% from ${cat.category} by setting strict budget caps.`,
-    })),
+    categoryRecommendations: (context.categoryBreakdown || []).map((cat) => {
+      const spend = Math.round(cat.monthlyAvg || cat.monthlyAverage || cat.total || cat.totalAmount || 0);
+      return {
+        category: cat.category,
+        currentSpend: spend,
+        targetSpend: Math.round(spend * 0.80),
+        recommendation: spend > 0
+          ? `Trim 20% from ${cat.category} to save ₹${Math.round(spend * 0.20).toLocaleString("en-IN")}/mo by setting strict budget caps.`
+          : `No spending detected in ${cat.category}. Set a budget cap proactively.`,
+      };
+    }),
     summary: {
       potentialMonthlySavings: potentialSavings,
       annualSavingsPotential: potentialSavings * 12,
