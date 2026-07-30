@@ -1,6 +1,6 @@
 <div align="center">
 
-# 💸 SpendSense AI
+# SpendSense AI
 
 ### *An Autonomous Multi-Agent AI System for Intelligent Personal Finance Operations*
 
@@ -21,7 +21,7 @@
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Key Highlights & New Features](#key-highlights--new-features)
 - [Project Overview](#project-overview)
@@ -40,18 +40,18 @@
 
 ---
 
-## 🌟 Key Highlights & New Features
+## Key Highlights & New Features
 
-- 🤖 **10 Specialized AI Agents**: Autonomous multi-agent pipeline orchestrated for categorization, pattern analysis, savings optimization, budget planning, health scoring, monthly auditing, prediction forecasting, goal acceleration, and context-aware chat.
-- 🚨 **Income Overspending Alerts**: Real-time monitoring by the Savings Advisor Agent that triggers instant high-priority alerts when monthly expenditure exceeds calculated user income.
-- 📑 **100% Allocation PDF Export**: Budget Planner constructs full envelope allocations and exports official, formatted PDF budget plans.
-- 📊 **Interactive Analytics Suite**: Powered by Recharts featuring category pie charts, weekly/monthly spending bar charts, net savings line charts, and predictive expense forecast area charts.
-- 📄 **Monthly PDF Financial Audits**: Automated end-of-month financial health audit with historical comparisons, category break-downs, and downloadable PDF reports.
-- 🔔 **Smart Event-Driven Notifications**: In-app toast popups, unread badge counters, and real-time alerts for budget thresholds (80%/100%), large transactions, duplicates, and goal milestones.
+- **10 Specialized AI Agents**: Autonomous multi-agent pipeline orchestrated for categorization, pattern analysis, savings optimization, budget planning, health scoring, monthly auditing, prediction forecasting, goal acceleration, and context-aware chat.
+- **Income Overspending Alerts**: Real-time monitoring by the Savings Advisor Agent that triggers instant high-priority alerts when monthly expenditure exceeds calculated user income.
+- **100% Allocation PDF Export**: Budget Planner constructs full envelope allocations and exports official, formatted PDF budget plans.
+- **Interactive Analytics Suite**: Powered by Recharts featuring category pie charts, weekly/monthly spending bar charts, net savings line charts, and predictive expense forecast area charts.
+- **Monthly PDF Financial Audits**: Automated end-of-month financial health audit with historical comparisons, category break-downs, and downloadable PDF reports.
+- **Smart Event-Driven Notifications**: In-app toast popups, unread badge counters, and real-time alerts for budget thresholds (80%/100%), large transactions, duplicates, and goal milestones.
 
 ---
 
-## 🎯 Project Overview
+## Project Overview
 
 **SpendSense AI** bridges the gap between static transaction tracking and active wealth management. Unlike traditional expense trackers that only report past transactions, SpendSense AI acts as an autonomous **AI Financial Advisor** — continuously evaluating spending velocity, identifying financial leaks, predicting future risk areas, and delivering human-in-the-loop recommendations.
 
@@ -68,7 +68,7 @@
 
 ---
 
-## ⚡ Features
+## Features
 
 ### 1. Dashboard Command Center
 - **Greeting & Overview**: Real-time snapshot of user total balance, monthly income, total spent, and net savings.
@@ -129,7 +129,7 @@
 
 ---
 
-## 🧠 Multi-Agent AI Pipeline
+## Multi-Agent AI Pipeline
 
 SpendSense AI utilizes a **10-Agent Pipeline** built on the Groq AI SDK (`llama-3.3-70b-versatile`):
 
@@ -165,7 +165,7 @@ SpendSense AI utilizes a **10-Agent Pipeline** built on the Groq AI SDK (`llama-
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -204,7 +204,7 @@ SpendSense AI utilizes a **10-Agent Pipeline** built on the Groq AI SDK (`llama-
 
 ---
 
-## 📁 Folder Structure
+## Folder Structure
 
 ```
 SpendSense AI/
@@ -279,7 +279,7 @@ SpendSense AI/
 
 ---
 
-## 🛠️ Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 
@@ -331,7 +331,7 @@ Visit `http://localhost:5173` in your browser.
 
 ---
 
-## 🔑 Environment Variables
+## Environment Variables
 
 ### Backend (`backend/.env`)
 
@@ -361,7 +361,7 @@ VITE_API_BASE_URL=http://localhost:5000/api/v1
 
 ---
 
-## 💻 Tech Stack
+## Tech Stack
 
 ### Backend Stack
 - **Runtime**: Node.js (v18+)
@@ -382,7 +382,7 @@ VITE_API_BASE_URL=http://localhost:5000/api/v1
 
 ---
 
-## 📡 API Endpoints
+## API Endpoints
 
 ### Authentication (`/api/v1/auth`)
 | Method | Endpoint | Description | Auth Required |
@@ -431,7 +431,7 @@ VITE_API_BASE_URL=http://localhost:5000/api/v1
 
 ---
 
-## 📄 PDF Report Generation
+## PDF Report Generation
 
 SpendSense AI includes built-in, client-side PDF document compilation using `jsPDF`:
 
@@ -440,7 +440,7 @@ SpendSense AI includes built-in, client-side PDF document compilation using `jsP
 
 ---
 
-## 🚀 Deployment
+## Deployment
 
 ### Backend (Render / Railway / Fly.io)
 1. Link your repository and set the root directory to `backend/`.
@@ -456,17 +456,17 @@ SpendSense AI includes built-in, client-side PDF document compilation using `jsP
 
 ---
 
-## 🔮 Future Scope
+## Future Scope
 
-- 🏦 **Open Banking / Plaid Integration**: Direct bank feed sync for automated transaction importing.
-- 📱 **React Native Mobile App**: iOS & Android cross-platform companion app.
-- 🌐 **Multi-Currency & FX Engine**: Automatic currency conversion and localized budget models.
-- 👥 **Shared / Family Budgets**: Multi-user shared vaults and joint goal tracking.
-- 🔐 **WebAuthn / 2FA**: Hardware security key & biometric authentication.
+- **Open Banking / Plaid Integration**: Direct bank feed sync for automated transaction importing.
+- **React Native Mobile App**: iOS & Android cross-platform companion app.
+- **Multi-Currency & FX Engine**: Automatic currency conversion and localized budget models.
+- **Shared / Family Budgets**: Multi-user shared vaults and joint goal tracking.
+- **WebAuthn / 2FA**: Hardware security key & biometric authentication.
 
 ---
 
-## 📄 License
+## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
@@ -474,9 +474,9 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 <div align="center">
 
-Made with ❤️ by the **SpendSense AI Team**
+Made by the **SpendSense AI Team**
 
-⭐ **Star this repository** if you found SpendSense AI helpful!
+**Star this repository** if you found SpendSense AI helpful!
 
 [![GitHub stars](https://img.shields.io/github/stars/mjjaiavinash/Multi-Agent-Personal-Finance-Companion?style=social)](https://github.com/mjjaiavinash/Multi-Agent-Personal-Finance-Companion)
 
